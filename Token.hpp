@@ -8,14 +8,14 @@
 struct Token 
 {
     // one constructor for each broad type of token
-    Token(token_name name) : name(name), attr() {}
-    Token(relational_operators op) : name(op), attr(op) {}
-    Token(arithmatic_operators aop) : name(aop), attr(aop) {}
-    Token(bitwise_operators bop) : name(bop), attr(bop) {}
-    Token(logical_operators lop) : name(lop), attr(lop) {}
-    Token(type_specifier ts) : name(ts), attr(ts) {}
-    Token(double num) : name(ts_int), attr(num) {}
-    Token(float fp) : name(ts_float), attr(fp) {}
+    Token(token_name name) : name(name), attr(), location() {}
+    Token(relational_operators op) : name(op), attr(op), location() {}
+    Token(arithmatic_operators aop) : name(aop), attr(aop), location() {}
+    Token(bitwise_operators bop) : name(bop), attr(bop), location() {}
+    Token(logical_operators lop) : name(lop), attr(lop), location() {}
+    Token(type_specifier ts) : name(ts), attr(ts), location() {}
+    Token(double num) : name(ts_int), attr(num), location() {}
+    Token(float fp) : name(ts_float), attr(fp), location() {}
     
     ~Token() = default;
 
@@ -24,21 +24,22 @@ struct Token
 
     // TODO: provide to_string method to print tokens according to spec:
     // <token_name:token_attr>\n
-    const std:string to_string(token_name name);
-    const std:string to_string(relational_operators op);
-    const std:string to_string(arithmatic_operators op);
-    const std:string to_string(bitwise_operators op);
-    const std:string to_string(logical_operators op);
-    const std:string to_string(type_specifier ts);
-    const std:string to_string(bool val);
-    const std:string to_string(double num);
-    const std:string to_string(float fp);
+    template<typename T>
+    const std::string to_string(const T& val)
+    {
+        std::ostringstream ss;
+        ss << '<' << val << ':' << attr << '>';
+        return ss.str();
+    }
+   
+    //const std:string to_string(attribute attr){ return to_string(attr); }
 
-    const std:string to_string(attribute attr){ return to_string(attr); }
+    void set_file_location(std::string file) {return location(file);}
 
     private:
         token_name name;
         attribute attr;
+        location location;
 };
 
 union attribute
@@ -68,3 +69,17 @@ union attribute
     float floatval;
 
 };
+
+struct location
+{
+    location() = default;
+    location(std::string path)
+        : file(file),
+          line(0),
+          column(0)
+    {}
+
+    std::string file;
+    int line;
+    int column;
+}
