@@ -8,14 +8,15 @@
 struct Token 
 {
     // one constructor for each broad type of token
-    Token(token_name name) : name(name), attr(), location() {}
-    Token(relational_operators op) : name(op), attr(op), location() {}
-    Token(arithmatic_operators aop) : name(aop), attr(aop), location() {}
-    Token(bitwise_operators bop) : name(bop), attr(bop), location() {}
-    Token(logical_operators lop) : name(lop), attr(lop), location() {}
-    Token(type_specifier ts) : name(ts), attr(ts), location() {}
-    Token(double num) : name(ts_int), attr(num), location() {}
-    Token(float fp) : name(ts_float), attr(fp), location() {}
+    Token(token_name name);
+    Token(const char* str);
+    Token(relational_operators op);
+    Token(arithmatic_operators aop);
+    Token(bitwise_operators bop);
+    Token(logical_operators lop);
+    Token(type_specifier ts);
+    Token(double num);
+    Token(float fp);
     
     ~Token() = default;
 
@@ -31,10 +32,10 @@ struct Token
         ss << '<' << val << ':' << attr << '>';
         return ss.str();
     }
-   
-    //const std:string to_string(attribute attr){ return to_string(attr); }
 
-    void set_file_location(std::string file) {return location(file);}
+    void set_file_path(std::string file) {return location.set_path(file);}
+    void init_location() {return location.init();}
+    bool has_attribute(){}
 
     private:
         token_name name;
@@ -72,12 +73,14 @@ union attribute
 
 struct location
 {
-    location() = default;
-    location(std::string path)
-        : file(file),
-          line(0),
-          column(0)
+    location()
+        : line(0), column(0)
     {}
+
+    void set_path(std::string path) { return file = f; }
+    void init(){ return line=column=0; }
+    void next_line() { return ++line; }
+    void next_column(){ return ++column; }
 
     std::string file;
     int line;
