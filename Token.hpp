@@ -3,20 +3,21 @@
 #include <iostream>
 #include <string>
 #include "Token_enums.hpp"
+#include "Location.hpp"
 
 
 struct Token 
 {
     // one constructor for each broad type of token
-    Token(token_name name);
-    Token(const char* str);
-    Token(relational_operators op);
-    Token(arithmatic_operators aop);
-    Token(bitwise_operators bop);
-    Token(logical_operators lop);
-    Token(type_specifier ts);
-    Token(double num);
-    Token(float fp);
+    Token(token_name name, Location loc);
+    Token(const char* str, Location loc);
+    Token(relational_operators op, Location loc);
+    Token(arithmatic_operators aop, Location loc);
+    Token(bitwise_operators bop, Location loc);
+    Token(logical_operators lop, Location loc);
+    Token(type_specifier ts, Location loc);
+    Token(double num, Location loc);
+    Token(float fp, Location loc);
     
     ~Token() = default;
 
@@ -70,19 +71,3 @@ union attribute
     float floatval;
 
 };
-
-struct location
-{
-    location()
-        : line(0), column(0)
-    {}
-
-    void set_path(std::string path) { return file = f; }
-    void init(){ return line=column=0; }
-    void next_line() { return ++line; }
-    void next_column(){ return ++column; }
-
-    std::string file;
-    int line;
-    int column;
-}
