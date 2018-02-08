@@ -115,25 +115,34 @@ Lexer::lex_token(token_name token)
 Token
 Lexer::lex_relop(int len, relational_operators op)
 {
+    while(len > 0)
+    {
+        accept();
+        --len;
+    }
 
+    return Token(op, token_location);
 }
 
 Token 
 Lexer::lex_arthop(arithmatic_operators op)
 {
-
+    accept();
+    return Token(op, token_location);
 }
 
 Token 
 Lexer::lex_bitop(bitwise_operators op)
 {
-
+    accept();
+    return Token(op, token_location);
 }
 
 Token 
 Lexer::lex_logop(int len, logical_operators op)
 {
-
+    accept();
+    return Token(op, token_location);
 }
 
 Token 
@@ -151,9 +160,9 @@ Lexer::lex_number(char* c)
 }
 
 bool 
-Lexer::is_comment_character(char ch)
+Lexer::is_comment_character()
 {
-
+    return *current != '\n';
 }
 
 void
@@ -169,26 +178,27 @@ void
 Lexer::ignore()
 {
     current_location.next_column();
-    char c = *current;
     ++current;
 }
 
 void 
 Lexer::skip_space()
 {
-    current_location.next_column();
     while(!eof && std::isspace(*current)) ignore();
 }
 
 void 
 Lexer::skip_newline()
 {
+    assert(*current == '\n');
     ignore();
     current_location.next_line();
+    current_location.set_column(0);
 }
 
 void 
 Lexer::skip_comment()
 {
-
+    assert(*current == '#');
+    while(is_comment_character()) ignore();
 }
