@@ -15,6 +15,8 @@ Lexer::scan(std::string input)
     assert(!eof());
     while(!eof())
     {
+        token_location = current_location;
+
         switch(*current)
         {
             // spaces and comments
@@ -107,8 +109,7 @@ Token
 Lexer::lex_token(token_name token)
 {
     accept();
-    return { token }; // TODO: add location data
-
+    return Token(token, token_location);
 }
 
 Token
@@ -158,6 +159,7 @@ Lexer::is_comment_character(char ch)
 void
 Lexer::accept()
 {
+    current_location.next_column();
     char c = *current;
     comsumed += c;
     ++current;
@@ -166,6 +168,7 @@ Lexer::accept()
 void 
 Lexer::ignore()
 {
+    current_location.next_column();
     char c = *current;
     ++current;
 }
@@ -173,6 +176,7 @@ Lexer::ignore()
 void 
 Lexer::skip_space()
 {
+    current_location.next_column();
     while(!eof && std::isspace(*current)) ignore();
 }
 
@@ -180,6 +184,7 @@ void
 Lexer::skip_newline()
 {
     ignore();
+    current_location.next_line();
 }
 
 void 
