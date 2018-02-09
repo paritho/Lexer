@@ -50,7 +50,7 @@ struct Lexer
         Location current_location;
         Location token_location;
         Symbol_table symbols;
-        std::unordered_map<symbol, token> reserved_words;
+        std::unordered_map<symbol, Token> reserved_words;
 
 };
 

@@ -16,7 +16,7 @@ union attribute
 {
     attribute() = default;
     attribute(symbol s): sym(s){}
-    attribute(keywords key) : keyword(key){}
+    attribute(keywords key) : key(key){}
     attribute(relational_operators op) : relop(op) {}
     attribute(arithmatic_operators op) : arthop(op) {}
     attribute(bitwise_operators op) : bitop(op) {}
@@ -30,7 +30,7 @@ union attribute
  
     // member vars for the token types
     symbol sym;
-    keyword key;
+    keywords key;
     relational_operators relop;
     arithmatic_operators arthop;
     bitwise_operators bitop;
