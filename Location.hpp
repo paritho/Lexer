@@ -18,4 +18,4 @@ struct Location
         std::string file;
         int line;
         int column;
-}
+};
