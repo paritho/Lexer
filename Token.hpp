@@ -35,16 +35,18 @@ struct Token
     const char* display(logical_operators op);
     const char* display(type_specifier type);
     const char* display(integer_token num);
+    const char* display(char c);
     const char* display(char* str);
     const char* display(double num);
     const char* display(bool boolval);
+    const char* display(location loc);
 
 
     void set_file_path(std::string file) {return location.set_path(file);}
     void init_location() {return location.init();}
     bool has_attribute();
     
-    token_name get_int_kind(radix rad);
+    token_name get_int_base(radix base);
     token_name get_name() { return name; }
 
     template<typename T>

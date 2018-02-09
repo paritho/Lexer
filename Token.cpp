@@ -150,6 +150,11 @@ display(token_name name){
         case token_string_literal:
             return "string";
     }
+}
+
+const char* 
+display(symbol symbol){
+    return symbol;
 }                  
 
 const char* 
@@ -249,22 +254,24 @@ display(type_specifier type){
 }
 
 const char* 
+display(integer_token num){
+    return std::to_string(num.value)
+}
+
+const char
+display(char c){ 
+    ostringstream ss;
+    ss << '\'' << c << '\'';       
+    return ss.str();
+}
+
+const char* 
 display(char* str){
     return str;
 }
 
 const char* 
-display(symbol symbol){
-    return symbol;
-}
-
-const char* 
-display(integer_token num){
-    return std::to_string(num.value)
-}
-
-const char* 
-display(float num){
+display(double num){
     // std::to_string can have problems with floats
     return std::to_wstring(num);
 }
@@ -282,9 +289,6 @@ display(location loc){
     ss << " in file: " << loc.file;
     return ss.str();
 }
-
-const char
-display(char c){ return c; }
 
 bool
 Token::has_attribute(){
