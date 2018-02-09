@@ -3,14 +3,39 @@
 #include <cctype>
 #include "Lexer.hpp"
 
-Token
-Lexer::lex(symbol sym, std::string input)
-{
-    return scan(input);
+// construct the lexer
+Lexer::Lexer(Symbol_table& symbol, const std::string& str)
+    : symbols(symbol),
+      current(str.data()), 
+      end(str.size()),
+      consumed("")
+{ 
+    // reserve language words
+    reserved_words.insert({
+        // keywords
+        { symbols.get('def'), key_def },
+        { symbols.get('else'), key_else },
+        { symbols.get('if'), key_if },
+        { symbols.get('let'), key_let },
+        { symbols.get('var'), key_var },
+        // logic ops
+        { symbols.get('and'), op_AND },
+        { symbols.get('or'), op_OR },
+        { symbols.get('not'), op_NOT },
+        // boolean literal
+        { symbols.get('true'), true },
+        { symbols.get('false'), false },
+        // type specifiers
+        { symbols.get('bool'), ts_bool },
+        { symbols.get('char'), ts_char },
+        { symbols.get('int'), ts_int},
+        { symbols.get('float'), ts_float },
+        { symbols.get('void'), ts_void},
+    });
 }
 
 Token 
-Lexer::scan(std::string input)
+Lexer::scan()
 {
     assert(!eof());
     while(!eof())
@@ -33,23 +58,23 @@ Lexer::scan(std::string input)
 
             // punctuators                        
             case '{':
-                return lex_token(token_left_bracket);
+                return lex_punctuator(token_left_bracket);
             case '}':
-                return lex_token(token_right_bracket);
+                return lex_punctuator(token_right_bracket);
             case '[':
-                return lex_token(token_left_brace);
+                return lex_punctuator(token_left_brace);
             case ']':
-                return lex_token(token_right_brace);
+                return lex_punctuator(token_right_brace);
             case '(':
-                return lex_token(token_left_paren);
+                return lex_punctuator(token_left_paren);
             case ')':
-                return lex_token(token_right_paren);
+                return lex_punctuator(token_right_paren);
             case ',':
-                return lex_token(token_comma);
+                return lex_punctuator(token_comma);
             case ';':
-                return lex_token(token_semicolon);
+                return lex_punctuator(token_semicolon);
             case ':':
-                return lex_token(token_colon);
+                return lex_punctuator(token_colon);
 
             // relational ops
             case '<':
@@ -64,9 +89,9 @@ Lexer::scan(std::string input)
             // conditional and assignment
             // NOTE: == is a relational op that will be determined here
             case '?':
-                return lex_token(token_conditional_op);
+                return lex_conditional();
             case '=':
-                if(peek()) != '=') return lex_token(token_assignment_op);
+                if(peek()) != '=') return lex_assignment();
                 return lex_relop(2, op_equals);
 
             // arithmatic ops
@@ -106,7 +131,7 @@ Lexer::scan(std::string input)
 }
 
 Token
-Lexer::lex_token(token_name token)
+Lexer::lex_punctuator(token_name token)
 {
     accept();
     return Token(token, token_location);
@@ -149,6 +174,23 @@ Token
 Lexer::lex_word(int len, char* c)
 {
     assert(std::isalpha(c));
+    const char* start = current;
+    // accept first char
+    accept();
+    // accept subsequent char if alphanumeric
+    while(!eof() && is_alnum(*current)) accept();
+
+    // build word
+    std::string str(start, current);
+    // add it to the symbol table
+    Symbol_table sym = symbols.get(str);
+    // look for reserved word
+    auto iter = reserved_words.find(sym);
+    if(iter != reserved_words.end()) return Token(iter->second, token_location);
+
+    // return the token if not a reserved word
+    return Token(str, token_location);
+
 
 }
 

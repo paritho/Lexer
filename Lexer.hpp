@@ -3,55 +3,32 @@
 #include <unordered_map>
 #include "Token.hpp"
 #include "Symbol.hpp"
+#include "Location.hpp"
 
 struct Lexer 
 {
-    Lexer(Symbol_table& symbol, const std::string& str)
-        : symbols(symbol),
-          current(str.data()), 
-          end(str.size()),
-          consumed('')
-    { 
-        reserved_words.insert({
-            // keywords
-            { symbols.get('def'), key_def },
-            { symbols.get('else'), key_else },
-            { symbols.get('if'), key_if },
-            { symbols.get('let'), key_let },
-            { symbols.get('var'), key_var },
-            // logic ops
-            { symbols.get('and'), op_AND },
-            { symbols.get('or'), op_OR },
-            { symbols.get('not'), op_NOT },
-            // boolean literal
-            { symbols.get('true'), true },
-            { symbols.get('false'), false },
-            // type specifiers
-            { symbols.get('bool'), ts_bool },
-            { symbols.get('char'), ts_char },
-            { symbols.get('int'), ts_int},
-            { symbols.get('float'), ts_float },
-            { symbols.get('void'), ts_void},
-        });
-    }
+    Lexer(Symbol_table& symbol, std::string& input);
 
     // lexical analysis helper functions
-    Token lex(symbol sym, std::string input);
-    Token scan(std::string input);
-    Token operator ()() {return scan();}
+    Token scan();
+    Token operator ()() { return scan(); }
 
     bool eof(){return current == end;};
-    char peek() const { return eof() ? 0 : *current + 1; }
+    // take a peek at the NEXT char
+    char peek() const { return eof() ? 0 : *(current + 1); }
 
-    // this function works for all token types not in a group
-    Token lex_token(token_name token);
-    // these are for grouped types
+    Token lex_punctuator(token_name token);
     Token lex_relop(int len, relational_operators op);
     Token lex_arthop(arithmatic_operators op);
     Token lex_bitop(bitwise_operators op);
-    Token lex_logop(int len, logical_operators op);
+    Token lex_conditional();
+    Token lex_assignment();
     Token lex_word(int len, char* ch);
     Token lex_number(char num);
+    Token lex_binary_int();
+    Token lex_hexidecimal_int();
+    Token lex_character();
+    Token lex_string();
 
     // other helpful functions
     bool is_comment_character(char ch);
@@ -67,8 +44,10 @@ struct Lexer
     private:
         const char* current;
         const char* end;
-        std::string consumed;
-        symbol symbols;
+        const char* consumed;
+        Location current_location;
+        Location token_location;
+        Symbol_table symbols;
         std::unordered_map<symbol, token> reserved_words;
 
 };
