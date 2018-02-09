@@ -20,7 +20,7 @@ struct Lexer
     Token lex_punctuator(token_name token);
     Token lex_relop(int len, relational_operators op);
     Token lex_arthop(arithmatic_operators op);
-    Token lex_bitop(bitwise_operators op);
+    Token lex_bitop(int len, bitwise_operators op);
     Token lex_conditional();
     Token lex_assignment();
     Token lex_word(int len, char* ch);
@@ -33,8 +33,9 @@ struct Lexer
     // other helpful functions
     bool is_comment_character(char ch);
     
-    char accept();
-    char ignore();
+    void accept();
+    void accept(int n);
+    void ignore();
     
     void skip_space();
     void skip_newline();

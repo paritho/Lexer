@@ -35,15 +35,14 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& str)
 }
 
 Token 
-Lexer::scan()
-{
+Lexer::scan(){
+
     assert(!eof());
-    while(!eof())
-    {
+    while(!eof()){
+
         token_location = current_location;
 
-        switch(*current)
-        {
+        switch(*current){
             // spaces and comments
             case ' ':
             case '\t':
@@ -76,13 +75,15 @@ Lexer::scan()
             case ':':
                 return lex_punctuator(token_colon);
 
-            // relational ops
+            // relational ops & some bitops
             case '<':
-                if(peek() != '=') return lex_relop(1, op_lessthan);
-                return lex_relop(2, op_ltequals);
+                if(peek() == '<') return lex_bitop(2, op_leftshift);
+                if(peek() == '=') return lex_relop(2, op_ltequals);
+                return lex_relop(1, op_lessthan);
             case '>':
-                if(peek() != '=') return lex_relop(1, op_greaterthan);
-                return lex_relop(2, op_gtequals);
+                if(peek() == '>') return lex_bitop(2, op_rightshift);
+                if(peek() == '=') return lex_relop(2, op_gtequals);
+                return  lex_relop(1, op_greaterthan);
             case '!':
                 if(peek() == '=') return lex_relop(2, op_notequal);
 
@@ -111,10 +112,18 @@ Lexer::scan()
                 return lex_bitop(op_and);
             case '|':
                 return lex_bitop(op_or);
-            case '`':
+            case '~':
                 return lex_bitop(op_not);
+            case '^':
+                return lex_bitop(op_xor);
         
             // logic ops handled in lex_word
+
+            // characters and strings
+            case '\'':
+                return lex_character();
+            case '"':
+                return lex_string();
 
             default:
                 if(!std::isdigit(*current)) return lex_word();
@@ -131,48 +140,42 @@ Lexer::scan()
 }
 
 Token
-Lexer::lex_punctuator(token_name token)
-{
+Lexer::lex_punctuator(token_name token){
     accept();
-    return Token(token, token_location);
+    return {token, token_location}
 }
 
 Token
-Lexer::lex_relop(int len, relational_operators op)
-{
-    while(len > 0)
-    {
-        accept();
-        --len;
-    }
+Lexer::lex_relop(int len, relational_operators op){
 
-    return Token(op, token_location);
+    accept(len);
+    return {op, token_location};
 }
 
 Token 
-Lexer::lex_arthop(arithmatic_operators op)
-{
+Lexer::lex_arthop(arithmatic_operators op){
+
     accept();
-    return Token(op, token_location);
+    return {op, token_location};
+}
+
+Token
+Lexer::lex_bitop(int len, bitwise_operators op){
+
+    accept(len);
+    return {op, token_location};
 }
 
 Token 
-Lexer::lex_bitop(bitwise_operators op)
-{
-    accept();
-    return Token(op, token_location);
+Lexer::lex_logop(int len, logical_operators op){
+
+    accept(len);
+    return {op, token_location};
 }
 
 Token 
-Lexer::lex_logop(int len, logical_operators op)
-{
-    accept();
-    return Token(op, token_location);
-}
+Lexer::lex_word(int len, char* c){
 
-Token 
-Lexer::lex_word(int len, char* c)
-{
     assert(std::isalpha(c));
     const char* start = current;
     // accept first char
@@ -195,43 +198,63 @@ Lexer::lex_word(int len, char* c)
 }
 
 Token
-Lexer::lex_number(char* c)
-{
+Lexer::lex_number(char* c){
     assert(std::isdigit(c));
 
 }
 
+Token
+Lexer::lex_character(){
+    assert(*current == '\'');
+    assert(std::is_alpha(peek());
+    
+    // advance beyond single quote 
+    accept();
+    char c = *current;
+    if(peek() != '\'') throw std::runtime_error("Unterminated character literal");
+    // advance beyond final single quote
+    accept(2);
+
+    return {c, token_location};
+}
+
 bool 
-Lexer::is_comment_character()
-{
+Lexer::is_comment_character(){
     return *current != '\n';
 }
 
 void
-Lexer::accept()
-{
+Lexer::accept(){
+
     current_location.next_column();
     char c = *current;
     comsumed += c;
     ++current;
 }
 
+// to accept more than one char at a time
 void 
-Lexer::ignore()
-{
+Lexer::accept(int n){
+
+    while(n < 0){
+        accept();
+        --n
+    }
+}
+
+void 
+Lexer::ignore(){
+
     current_location.next_column();
     ++current;
 }
 
 void 
-Lexer::skip_space()
-{
-    while(!eof && std::isspace(*current)) ignore();
-}
+Lexer::skip_space(){ while(!eof && std::isspace(*current)) ignore(); }
 
 void 
-Lexer::skip_newline()
-{
+Lexer::skip_newline(){
+
     assert(*current == '\n');
     ignore();
     current_location.next_line();
@@ -239,8 +262,7 @@ Lexer::skip_newline()
 }
 
 void 
-Lexer::skip_comment()
-{
+Lexer::skip_comment(){
     assert(*current == '#');
     while(is_comment_character()) ignore();
 }
