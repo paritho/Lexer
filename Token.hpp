@@ -4,6 +4,7 @@
 #include <string>
 #include "Token_enums.hpp"
 #include "Location.hpp"
+#include "Symbol.hpp"
 
 struct Token 
 {
