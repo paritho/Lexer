@@ -19,27 +19,25 @@ enum token_name
     token_conditional_op,
     token_assignment_op,
 
-    // keywords
-    key_def,
-    key_else,
-    key_if,
-    key_let,
-    key_var,
+    // operator groups
+    token_relational_op,
+    token_arithmatic_op,
+    token_bitwise_op,
+    token_logical_op,
+    token_type_specifier,
+    token_keywords,
 
     // identifier
     token_identifier,
 
     // literals
-    token_decimal_int_literal,
-    token_binary_int_literal,
-    token_hex_digit,
-    token_hex_int_literal,
-    token_binary_digit,
+    token_decimal_int,
+    token_binary_int,
+    token_hex_int,
     token_floating_point_literal,
     token_boolean_literal,
     token_character_literal,
     token_string_literal,
-    token_type_specifier
 };
 
 // operator groups
@@ -66,7 +64,10 @@ enum bitwise_operators
 {
     op_and,
     op_or,
-    op_not
+    op_xor,
+    op_leftshift,
+    op_rightshift,
+    op_not,
 };
 
 enum logical_operators 
@@ -74,6 +75,15 @@ enum logical_operators
     op_AND,
     op_OR,
     op_NOT,
+};
+
+enum keywords
+{
+    key_def,
+    key_else,
+    key_if,
+    key_let,
+    key_var,
 };
 
 // helper enums
