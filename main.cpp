@@ -19,7 +19,7 @@ main(int argc, char** argv)
     
 
     Symbol_table stable;
-    Lexer lex(stable, argv[1]);
+    Lexer lex(stable, file_contents);
 
     while(Token token = lex())
         std::cout << token << '\n';
