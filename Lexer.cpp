@@ -167,6 +167,18 @@ Lexer::lex_bitop(int len, bitwise_operators op){
     return {op, token_location};
 }
 
+Token
+Lexer::lex_conditional(){
+    accept();
+    return {token_conditional_op, current_location};
+}
+
+Token
+Lexer::lex_assignment(){
+    accept();
+    return {token_assignment_op, current_location};
+}
+
 Token 
 Lexer::lex_logop(int len, logical_operators op){
 
@@ -190,11 +202,10 @@ Lexer::lex_word(int len, char* c){
     Symbol_table sym = symbols.get(str);
     // look for reserved word
     auto iter = reserved_words.find(sym);
-    if(iter != reserved_words.end()) return Token(iter->second, token_location);
+    if(iter != reserved_words.end()) return {iter->second, token_location};
 
     // return the token if not a reserved word
-    return Token(str, token_location);
-
+    return {str, token_location};
 
 }
 
@@ -219,6 +230,8 @@ Lexer::lex_character(){
     return {c, token_location};
 }
 
+// this should be called from skip_comment ONLY
+// a comment line terminates on \n character
 bool 
 Lexer::is_comment_character(){
     return *current != '\n';
@@ -251,7 +264,11 @@ Lexer::ignore(){
 }
 
 void 
-Lexer::skip_space(){ while(!eof && std::isspace(*current)) ignore(); }
+Lexer::skip_space(){ 
+
+    assert(std::isspace(*current));
+    while(!eof && std::isspace(*current)) ignore(); 
+}
 
 void 
 Lexer::skip_newline(){
@@ -265,5 +282,5 @@ Lexer::skip_newline(){
 void 
 Lexer::skip_comment(){
     assert(*current == '#');
-    while(is_comment_character()) ignore();
+    while(is_comment_character(*current)) ignore();
 }
