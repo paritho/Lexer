@@ -11,13 +11,15 @@ struct Token
     Token() = default;
     Token(token_name name, Location loc);
     Token(const char* str, Location loc);
+    Token(char c, Location loc);
     Token(relational_operators op, Location loc);
     Token(arithmatic_operators aop, Location loc);
     Token(bitwise_operators bop, Location loc);
     Token(logical_operators lop, Location loc);
+    Token(keywords key, Location loc);
     Token(type_specifier ts, Location loc);
     Token(double num, Location loc);
-    Token(float fp, Location loc);
+    Token(integer_token it, radix rad, long long value, Location loc);
     
     ~Token() = default;
 
@@ -34,19 +36,21 @@ struct Token
     const char* display(type_specifier type);
     const char* display(integer_token num);
     const char* display(char* str);
-    const char* display(float num);
+    const char* display(double num);
     const char* display(bool boolval);
 
 
     void set_file_path(std::string file) {return location.set_path(file);}
     void init_location() {return location.init();}
     bool has_attribute();
+    
+    token_name get_int_kind(radix rad);
     token_name get_name() { return name; }
 
     template<typename T>
     T get_attr(){
         assert(this.has_attribute());
-        
+
         switch(name){
             case token_hex_int:
             case token_binary_int:
@@ -99,7 +103,7 @@ union attribute
     attribute(logical_operators op) :logop(op) {}
     attribute(type_specifier ts) : typespec(ts) {}
     attribute(integer_token inttok) : intval(inttok) {}
-    attribute(float fp) : floatval(fp) {}
+    attribute(double fp) : floatval(fp) {}
     attribute(char* str) : str(str){}
     attribute(char c) : ch(c) {}
     attribute(bool truefalse) : boolval(truefalse) {}
@@ -116,6 +120,6 @@ union attribute
     bool boolval;
     char* str;
     char ch;
-    float floatval;
+    double floatval;
 
 };

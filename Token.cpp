@@ -42,7 +42,6 @@ Token::Token(logical_operators lop, Location loc)
           location(loc)
 { }
 
-
 Token::Token(type_specifier ts, Location loc)
     : name(token_type_specifier),
           attr(ts),
@@ -55,11 +54,47 @@ Token::Token(double num, Location loc)
       location(loc)
 { }
 
+Token(integer_token it, radix rad, long long value, Location loc)
+    : name(get_int_base(radix)),
+      attr(integer_token{rad, valud}),
+      location(loc)
+{}
+
 Token::Token(bool truefalse, Location loc)
         : name(token_boolean_literal),
           attr(truefalse),
           location(loc)
 { }
+
+Token(const char* str, Location loc)
+    : name(token_string_literal),
+      attr(str),
+      location(loc)
+{}
+
+Token(char c, Location loc)
+    : name(token_character_literal),
+      attr(c),
+      location(loc)
+{}
+
+Token(keywords key, Location loc)
+    : name(token_keywords),
+      attr(key),
+      location(loc)
+{}
+
+token_name
+get_int_base(radix base){
+    switch(base){
+        case binary:
+            return token_binary_int;
+        case decimal:
+            return token_decimal_int;
+        case hexidecimal:
+            return token_hex_int;
+    }
+}
 
 const char* 
 display(token_name name){
