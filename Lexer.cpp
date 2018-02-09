@@ -167,6 +167,13 @@ Lexer::lex_bitop(int len, bitwise_operators op){
     return {op, token_location};
 }
 
+Token 
+Lexer::lex_logop(int len, logical_operators op){
+
+    accept(len);
+    return {op, token_location};
+}
+
 Token
 Lexer::lex_conditional(){
     accept();
@@ -177,13 +184,6 @@ Token
 Lexer::lex_assignment(){
     accept();
     return {token_assignment_op, current_location};
-}
-
-Token 
-Lexer::lex_logop(int len, logical_operators op){
-
-    accept(len);
-    return {op, token_location};
 }
 
 Token 
@@ -216,6 +216,16 @@ Lexer::lex_number(char* c){
 }
 
 Token
+Lexer::lex_binary_int(){
+
+}
+
+Token
+Lexer::lex_hexidecimal_int(){
+
+}
+
+Token
 Lexer::lex_character(){
     assert(*current == '\'');
     assert(std::is_alpha(peek());
@@ -228,6 +238,11 @@ Lexer::lex_character(){
     accept(2);
 
     return {c, token_location};
+}
+
+Token
+Lexer::lex_string(){
+    
 }
 
 // this should be called from skip_comment ONLY
