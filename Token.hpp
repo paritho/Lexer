@@ -1,5 +1,5 @@
 #pragma once
-#include <ctype>
+#include <cctype>
 #include <iostream>
 #include <string>
 #include "Token_enums.hpp"
