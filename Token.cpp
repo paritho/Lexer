@@ -6,6 +6,10 @@
 
 
 //constructors
+Token::Token()
+    :name(token_eof)
+{}
+
 Token::Token(token_name name, Location loc)
     : name(name), location(loc);
 {
@@ -17,6 +21,12 @@ Token::Token(symbol symbol, Location loc)
       attribute(symbol),
       location(loc)
 { }
+
+Token(keywords key, Location loc)
+    : name(token_keywords),
+      attr(key),
+      location(loc)
+{}
 
 Token::Token(relational_operators rop, Location loc)
     : name(token_relational_op), 
@@ -48,27 +58,9 @@ Token::Token(type_specifier ts, Location loc)
           location(loc)
 { }
 
-Token::Token(double num, Location loc)
-    : name(token_floating_point_literal),
-      attr(num),
-      location(loc)
-{ }
-
-Token(integer_token it, radix rad, long long value, Location loc)
+Token(radix rad, long long value, Location loc)
     : name(get_int_base(radix)),
-      attr(integer_token{rad, valud}),
-      location(loc)
-{}
-
-Token::Token(bool truefalse, Location loc)
-        : name(token_boolean_literal),
-          attr(truefalse),
-          location(loc)
-{ }
-
-Token(const char* str, Location loc)
-    : name(token_string_literal),
-      attr(str),
+      attr(integer_token{rad, value}),
       location(loc)
 {}
 
@@ -78,11 +70,24 @@ Token(char c, Location loc)
       location(loc)
 {}
 
-Token(keywords key, Location loc)
-    : name(token_keywords),
-      attr(key),
+Token(const char* str, Location loc)
+    : name(token_string_literal),
+      attr(str),
       location(loc)
 {}
+
+Token::Token(double num, Location loc)
+    : name(token_floating_point_literal),
+      attr(num),
+      location(loc)
+{ }
+
+Token::Token(bool boolval, Location loc)
+        : name(token_boolean_literal),
+          attr(boolval),
+          location(loc)
+{ }
+
 
 token_name
 get_int_base(radix base){
@@ -96,6 +101,7 @@ get_int_base(radix base){
     }
 }
 
+// functions to make the token display in the console
 const char* 
 display(token_name name){
     switch(name){

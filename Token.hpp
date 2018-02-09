@@ -10,16 +10,18 @@ struct Token
     // one constructor for each broad type of token
     Token() = default;
     Token(token_name name, Location loc);
-    Token(const char* str, Location loc);
-    Token(char c, Location loc);
+    Token(symbol symbol, Location loc);
+    Token(keywords key, Location loc);
     Token(relational_operators op, Location loc);
     Token(arithmatic_operators aop, Location loc);
     Token(bitwise_operators bop, Location loc);
     Token(logical_operators lop, Location loc);
-    Token(keywords key, Location loc);
     Token(type_specifier ts, Location loc);
+    Token(radix rad, long long value, Location loc);
+    Token(char c, Location loc);
+    Token(const char* str, Location loc);
     Token(double num, Location loc);
-    Token(integer_token it, radix rad, long long value, Location loc);
+    Token(bool boolval, Location loc);
     
     ~Token() = default;
 
@@ -42,8 +44,7 @@ struct Token
     const char* display(location loc);
 
 
-    void set_file_path(std::string file) {return location.set_path(file);}
-    void init_location() {return location.init();}
+    void set_file_path(std::string file) { return location.set_path(file); }
     bool has_attribute();
     
     token_name get_int_base(radix base);
