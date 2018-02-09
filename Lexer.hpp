@@ -24,7 +24,7 @@ struct Lexer
     Token lex_conditional();
     Token lex_assignment();
     Token lex_word(int len, char* ch);
-    Token lex_number(char num);
+    Token lex_number();
     Token lex_binary_int();
     Token lex_hexidecimal_int();
     Token lex_character();

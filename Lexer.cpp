@@ -109,13 +109,13 @@ Lexer::scan(){
 
             // bitwise ops
             case '&':
-                return lex_bitop(op_and);
+                return lex_bitop(1, op_and);
             case '|':
-                return lex_bitop(op_or);
+                return lex_bitop(1, op_or);
             case '~':
-                return lex_bitop(op_not);
+                return lex_bitop(1, op_not);
             case '^':
-                return lex_bitop(op_xor);
+                return lex_bitop(1, op_xor);
         
             // logic ops handled in lex_word
 
@@ -136,7 +136,8 @@ Lexer::scan(){
 
         }
     }
-
+    // returns the constructor that gives eof token
+    return {}
 }
 
 Token
