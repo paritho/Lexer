@@ -2,7 +2,7 @@
 #include <cctype>
 #include <iostream>
 #include <string>
-#include <assert>
+#include <cassert>
 #include "Token_enums.hpp"
 #include "Location.hpp"
 #include "Symbol.hpp"
