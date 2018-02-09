@@ -21,6 +21,7 @@ struct Lexer
     Token lex_relop(int len, relational_operators op);
     Token lex_arthop(arithmatic_operators op);
     Token lex_bitop(int len, bitwise_operators op);
+    Token lex_logop(int len, logical_operators op);
     Token lex_conditional();
     Token lex_assignment();
     Token lex_word(int len, char* ch);
