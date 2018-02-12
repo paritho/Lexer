@@ -89,8 +89,7 @@ struct Token
     token_name get_int_base(radix base);
     token_name get_name() { return name; }
 
-    template<typename T>
-    T get_attr(){
+    auto get_attr(){
         assert(this->has_attribute());
 
         switch(name){
