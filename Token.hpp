@@ -120,7 +120,7 @@ struct Token
                 return attr.typespec;
 
             default:
-                return null;
+                return std::runtime_error("Invalid token-type for get_attr() call");
         }
      }
 
