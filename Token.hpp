@@ -118,6 +118,9 @@ struct Token
                 return attr.logop;
             case token_type_specifier:
                 return attr.typespec;
+
+            default:
+                return null;
         }
      }
 

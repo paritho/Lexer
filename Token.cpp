@@ -328,6 +328,6 @@ operator << (std::ostream os, Token token){
     if(!token.has_attribute()) return os << display(token.get_name()) << '>';
 
     os << display(token.get_name()) << ': ';
-    os << display(token.get_attr()) << ">"; 
+    if(token.get_attr() != null) os << display(token.get_attr()) << ">"; 
     return os;
 }
