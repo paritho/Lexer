@@ -9,7 +9,7 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
       consumed("")
 { 
     // reserve language words
-    reserved_words.insert(
+    reserved_words.insert({
         // keywords
         { symbols.get("def"), key_def },
         { symbols.get("else"), key_else },
@@ -29,7 +29,7 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
         { symbols.get("int"), ts_int},
         { symbols.get("float"), ts_float },
         { symbols.get("void"), ts_void},
-    );
+    });
 }
 
 Token 
@@ -200,7 +200,7 @@ Lexer::lex_word(){
     symbol sym = symbols.get(str);
     // look for reserved word
     auto iter = reserved_words.find(sym);
-    if(iter != reserved_words.end()) return {iter->second, token_location};
+    if(iter != reserved_words.end()) return {*iter->second, token_location};
 
     // return the token if not a reserved word
     return {str, token_location};

@@ -9,6 +9,7 @@ using symbol = const std::string*;
 class Symbol_table
 {
     public:
+    symbol get(const char* str);
     symbol get(const std::string& str);
 
     private:
@@ -17,7 +18,12 @@ class Symbol_table
 
 // returns a unique symbol for the spelling of str
 inline symbol
-Symbol_table::get(const std::string& str)
-{
+Symbol_table::get(const char* str){
     return &*symbols.insert(str).first;
 }
+
+inline symbol
+Symbol_table::get(const std::string& str){
+    return &*symbols.insert(str).first;
+}
+
