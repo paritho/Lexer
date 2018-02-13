@@ -239,7 +239,7 @@ Lexer::lex_number(){
         accept();
         while(!eof() && isdigit(*current)) accept();
         // FIX: What should this token be?
-        return {std::string(start, current), token_location}
+        return {std::string(start, current), token_location};
     }
 
     // otherwise, this is now a floating point number
@@ -264,6 +264,7 @@ Token
 Lexer::lex_hexidecimal_int(){
     // we don't need the prefix 0x
     accept(2);
+    const char* start = current;
     while(!eof() && std::isxdigit(*current)) accept();
     std::string hexnum(start,current);
     return {hexidecimal, std::stoll(hexnum), token_location};
@@ -312,7 +313,7 @@ Lexer::lex_character(){
             case 'v':
                 c = '\v';
             default:
-                thow std::runtime_error("Invalid escape sequence");
+                throw std::runtime_error("Invalid escape sequence");
         }
         // advance beyond escape sequence
         accept(2);
