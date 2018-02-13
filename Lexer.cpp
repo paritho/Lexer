@@ -246,7 +246,7 @@ Lexer::lex_number(){
     while(!eof() && isdigit(*current)) accept();
 
     std::string fpnum(start, current);
-    return {std::strtod(fpnum), token_location};
+    return {std::stod(fpnum), token_location};
 }
 
 Token
@@ -264,24 +264,64 @@ Lexer::lex_hexidecimal_int(){
     // we don't need the prefix 0x
     accept(2);
     while(!eof() && std::isxdigit(*current)) accept();
-
     std::string hexnum(start,current);
-    
     return {hexidecimal, std::stoll(hexnum), token_location};
 }
 
 Token
 Lexer::lex_character(){
     assert(*current == '\'');
-    assert(std::isalpha(peek()));
-    
-    // advance beyond single quote 
-    accept();
-    char c = *current;
-    if(peek() != '\'') throw std::runtime_error("Unterminated character literal");
-    // advance beyond final single quote
-    accept(2);
 
+    // advance beyond opening single quote 
+    accept();
+    if(eof()) throw std::runtime_error("Unterminated character literal");
+    
+    // is the character well formed?
+    if(*current == '\n') throw std::runtime_error("Invalid mult-line character");
+    if(*current == '\'') throw std::runtime_error("character literal cannot be empty");
+
+    char c;
+    // if the current char is not a \ it's a basic character
+    // NOTE: this may be any character, digit except newline
+    // and single quote
+    if(*current != '\\'){
+        c = *current;
+        accept();
+    }
+    // is the character an escape sequence?
+    else{
+        assert(*current == '\\');
+        switch(peek()){
+            case '\'':
+            case '\"':
+            case '\\':
+                c = peek();
+            case 'a':
+                c = '\a';
+            case 'b':
+                c = '\b';
+            case 'f':
+                c = '\f';
+            case 'n':
+                c = '\n';
+            case 'r':
+                c = '\r';
+            case 't':
+                c = '\t';
+            case 'v':
+                c = '\v';
+            default:
+                thow std::runtime_error("Invalid escape sequence");
+        }
+        // advance beyond escape sequence
+        accept(2);
+    }
+
+    if(*current != '\'') throw std::runtime_error("Unterminated character literal");
+    // move beyond closing single quote
+    accept();
+
+    // c should hold either a character or escape sequence
     return {c, token_location};
 }
 
@@ -299,6 +339,7 @@ Lexer::is_comment_character(char c){
 
 void
 Lexer::accept(){
+    assert(*current != '\n');
     // NOTE: this does not advance token_location
     current_location.next_column();
     char c = *current;
