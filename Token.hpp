@@ -130,3 +130,6 @@ struct Token
         attribute attr;
         Location location;
 };
+
+std::ostream& 
+operator<<(std::ostream& os, Token token)

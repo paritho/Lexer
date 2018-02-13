@@ -13,9 +13,9 @@ struct Lexer
     Token scan();
     Token operator ()() { return scan(); }
 
-    bool eof(){return current == end;};
+    bool eof() { return current == end; }
     // take a peek at the NEXT char
-    char peek() const { return eof() ? 0 : *(current + 1); }
+    const char peek() const { return eof() ? 0 : *(current + 1); }
 
     Token lex_punctuator(token_name token);
     Token lex_relop(int len, relational_operators op);

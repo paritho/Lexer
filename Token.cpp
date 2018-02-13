@@ -321,7 +321,7 @@ Token::has_attribute(){
 
 
 std::ostream& 
-operator << (std::ostream os, Token token){
+operator<<(std::ostream& os, Token token){
 
     os << '<';
 
