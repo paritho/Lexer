@@ -220,7 +220,8 @@ Lexer::lex_number(){
             case 'x':
             case 'X':
                 return lex_hexidecimal_int();
-            default break;
+            default:
+                break;
         }
     }
 
@@ -230,7 +231,7 @@ Lexer::lex_number(){
 
     if(peek() != '.') {
         std::string number(start, current);
-        return {decimal, std::stoll(number), token_location)};
+        return {decimal, std::stoll(number), token_location};
     }
 
     // if next char is e, its an exponent
