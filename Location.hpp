@@ -3,6 +3,7 @@
 
 struct Location
 {
+    Location() = default;
     Location(std::string filepath)
         : file(filepath),line(-1), column(-1)
     {}
