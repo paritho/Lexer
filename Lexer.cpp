@@ -251,12 +251,23 @@ Lexer::lex_number(){
 
 Token
 Lexer::lex_binary_int(){
-    return {};
+    // we don't need the prefix 0b
+    accept(2);
+    const char* start = current;
+    while(!eof() && (*current == '0' || *current == '1')) accept();
+    std::string binnum(start,current);
+    return {binary, std::stoll(binnum), token_location};
 }
 
 Token
 Lexer::lex_hexidecimal_int(){
-    return {};
+    // we don't need the prefix 0x
+    accept(2);
+    while(!eof() && std::isxdigit(*current)) accept();
+
+    std::string hexnum(start,current);
+    
+    return {hexidecimal, std::stoll(hexnum), token_location};
 }
 
 Token
@@ -288,7 +299,7 @@ Lexer::is_comment_character(char c){
 
 void
 Lexer::accept(){
-
+    // NOTE: this does not advance token_location
     current_location.next_column();
     char c = *current;
     consumed += c;
@@ -298,7 +309,6 @@ Lexer::accept(){
 // to accept more than one char at a time
 void 
 Lexer::accept(int n){
-
     while(n < 0){
         accept();
         --n;
@@ -307,21 +317,18 @@ Lexer::accept(int n){
 
 void 
 Lexer::ignore(){
-
     current_location.next_column();
     ++current;
 }
 
 void 
 Lexer::skip_space(){ 
-
     assert(std::isspace(*current));
     while(!eof() && std::isspace(*current)) ignore(); 
 }
 
 void 
 Lexer::skip_newline(){
-
     assert(*current == '\n');
     ignore();
     current_location.next_line();
