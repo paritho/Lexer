@@ -9,7 +9,7 @@
 #include "Symbol.hpp"
 
 struct integer_token {
-    radix radix;
+    radix rad;
     long long value;
 };
 
