@@ -9,7 +9,7 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
       consumed("")
 { 
     // reserve language words
-    reserved_words.insert({
+    reserved_words.insert(
         // keywords
         { symbols.get("def"), key_def },
         { symbols.get("else"), key_else },
@@ -29,7 +29,7 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
         { symbols.get("int"), ts_int},
         { symbols.get("float"), ts_float },
         { symbols.get("void"), ts_void},
-    });
+    );
 }
 
 Token 
