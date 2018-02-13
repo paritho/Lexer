@@ -210,6 +210,38 @@ Lexer::lex_word(){
 Token
 Lexer::lex_number(){
     assert(std::isdigit(*current));
+    const char* start = current;
+
+    if(*current == '0'){
+        switch(peek()){
+            case 'b':
+            case 'B':
+                return lex_binary_int();
+            case 'x':
+            case 'X':
+                return lex_hexidecimal_int();
+            default break;
+        }
+    }
+
+    // if we get here, it is a decimal number
+    accept();
+    while(!eof() && isdigit(*current)) accept();
+
+    if(peek() != '.') {
+        std::string number(start, current);
+        return {decimal, std::stoll(number), token_location)};
+    }
+
+    // otherwise, this is now a floating point number
+    accept(); // move past the '.'
+    while(!eof() && isdigit(*current)) accept();
+
+    std::string fpnum(start, *current);
+    return {std::strtod(fpnum), token_location};
+
+    
+
     return {};
 }
 
