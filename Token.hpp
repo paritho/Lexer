@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <sstream>
 #include "Token_enums.hpp"
 #include "Location.hpp"
 #include "Symbol.hpp"

@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <cassert>
+#include <cctype>
 #include "Token.hpp"
 #include "Symbol.hpp"
 #include "Location.hpp"
@@ -24,7 +26,7 @@ struct Lexer
     Token lex_logop(int len, logical_operators op);
     Token lex_conditional();
     Token lex_assignment();
-    Token lex_word(int len, char* ch);
+    Token lex_word();
     Token lex_number();
     Token lex_binary_int();
     Token lex_hexidecimal_int();

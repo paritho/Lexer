@@ -1,6 +1,4 @@
-#include <cassert>
-#include <cctype>
-#include <unordered_map>
+
 #include "Lexer.hpp"
 
 // construct the lexer
@@ -126,7 +124,7 @@ Lexer::scan(){
                 return lex_string();
 
             default:
-                if(!std::isdigit(*current)) return lex_word(*current);
+                if(!std::isdigit(*current)) return lex_word();
                 if(std::isdigit(*current)) return lex_number();
                 
                 // if we get here is an invalid char
@@ -137,7 +135,7 @@ Lexer::scan(){
         }
     }
     // returns the constructor that gives eof token
-    return {}
+    return {};
 }
 
 Token
@@ -187,14 +185,14 @@ Lexer::lex_assignment(){
 }
 
 Token 
-Lexer::lex_word(char* c){
+Lexer::lex_word(){
 
-    assert(std::isalpha(c));
+    assert(std::isalpha(*current));
     const char* start = current;
     // accept first char
     accept();
     // accept subsequent char if alphanumeric
-    while(!eof() && is_alnum(*current)) accept();
+    while(!eof() && std::isalnum(*current)) accept();
 
     // build word
     std::string str(start, current);
@@ -212,23 +210,23 @@ Lexer::lex_word(char* c){
 Token
 Lexer::lex_number(){
     assert(std::isdigit(*current));
-
+    return {};
 }
 
 Token
 Lexer::lex_binary_int(){
-
+    return {};
 }
 
 Token
 Lexer::lex_hexidecimal_int(){
-
+    return {};
 }
 
 Token
 Lexer::lex_character(){
     assert(*current == '\'');
-    assert(std::is_alpha(peek());
+    assert(std::isalpha(peek()));
     
     // advance beyond single quote 
     accept();
@@ -242,14 +240,14 @@ Lexer::lex_character(){
 
 Token
 Lexer::lex_string(){
-    
+    return {};
 }
 
 // this should be called from skip_comment ONLY
 // a comment line terminates on \n character
 bool 
-Lexer::is_comment_character(){
-    return *current != '\n';
+Lexer::is_comment_character(char c){
+    return c != '\n';
 }
 
 void
@@ -257,7 +255,7 @@ Lexer::accept(){
 
     current_location.next_column();
     char c = *current;
-    comsumed += c;
+    consumed += c;
     ++current;
 }
 
@@ -267,7 +265,7 @@ Lexer::accept(int n){
 
     while(n < 0){
         accept();
-        --n
+        --n;
     }
 }
 
@@ -282,7 +280,7 @@ void
 Lexer::skip_space(){ 
 
     assert(std::isspace(*current));
-    while(!eof && std::isspace(*current)) ignore(); 
+    while(!eof() && std::isspace(*current)) ignore(); 
 }
 
 void 
