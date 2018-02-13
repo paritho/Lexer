@@ -58,12 +58,10 @@ struct Token
     Token(type_specifier ts, Location loc);
     Token(radix rad, long long value, Location loc);
     Token(char c, Location loc);
-    Token(const char* str, Location loc);
+    Token(std::string str, Location loc);
     Token(double num, Location loc);
     Token(bool boolval, Location loc);
     
-    ~Token() = default;
-
     // some comvienence. converts to true if not eof
     explicit operator bool() const { return name != token_eof; }
 
@@ -132,4 +130,4 @@ struct Token
 };
 
 std::ostream& 
-operator<<(std::ostream& os, Token token)
+operator<<(std::ostream& os, Token token);

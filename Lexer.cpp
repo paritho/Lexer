@@ -1,36 +1,36 @@
-#pragma once
 #include <cassert>
 #include <cctype>
+#include <unordered_map>
 #include "Lexer.hpp"
 
 // construct the lexer
-Lexer::Lexer(Symbol_table& symbol, const std::string& str)
+Lexer::Lexer(Symbol_table& symbol, const std::string& input)
     : symbols(symbol),
-      current(str.data()), 
-      end(str.size()),
+      current(input.data()), 
+      end(current + input.size()),
       consumed("")
 { 
     // reserve language words
     reserved_words.insert({
         // keywords
-        { symbols.get('def'), key_def },
-        { symbols.get('else'), key_else },
-        { symbols.get('if'), key_if },
-        { symbols.get('let'), key_let },
-        { symbols.get('var'), key_var },
+        { symbols.get("def"), key_def },
+        { symbols.get("else"), key_else },
+        { symbols.get("if"), key_if },
+        { symbols.get("let"), key_let },
+        { symbols.get("var"), key_var },
         // logic ops
-        { symbols.get('and'), op_AND },
-        { symbols.get('or'), op_OR },
-        { symbols.get('not'), op_NOT },
+        { symbols.get("and"), op_AND },
+        { symbols.get("or"), op_OR },
+        { symbols.get("not"), op_NOT },
         // boolean literal
-        { symbols.get('true'), true },
-        { symbols.get('false'), false },
+        { symbols.get("true"), true },
+        { symbols.get("false"), false },
         // type specifiers
-        { symbols.get('bool'), ts_bool },
-        { symbols.get('char'), ts_char },
-        { symbols.get('int'), ts_int},
-        { symbols.get('float'), ts_float },
-        { symbols.get('void'), ts_void},
+        { symbols.get("bool"), ts_bool },
+        { symbols.get("char"), ts_char },
+        { symbols.get("int"), ts_int},
+        { symbols.get("float"), ts_float },
+        { symbols.get("void"), ts_void},
     });
 }
 
@@ -92,7 +92,7 @@ Lexer::scan(){
             case '?':
                 return lex_conditional();
             case '=':
-                if(peek()) != '=') return lex_assignment();
+                if(peek() != '=') return lex_assignment();
                 return lex_relop(2, op_equals);
 
             // arithmatic ops
@@ -126,7 +126,7 @@ Lexer::scan(){
                 return lex_string();
 
             default:
-                if(!std::isdigit(*current)) return lex_word();
+                if(!std::isdigit(*current)) return lex_word(*current);
                 if(std::isdigit(*current)) return lex_number();
                 
                 // if we get here is an invalid char
@@ -143,7 +143,7 @@ Lexer::scan(){
 Token
 Lexer::lex_punctuator(token_name token){
     accept();
-    return {token, token_location}
+    return {token, token_location};
 }
 
 Token
@@ -187,7 +187,7 @@ Lexer::lex_assignment(){
 }
 
 Token 
-Lexer::lex_word(int len, char* c){
+Lexer::lex_word(char* c){
 
     assert(std::isalpha(c));
     const char* start = current;
@@ -199,7 +199,7 @@ Lexer::lex_word(int len, char* c){
     // build word
     std::string str(start, current);
     // add it to the symbol table
-    Symbol_table sym = symbols.get(str);
+    symbol sym = symbols.get(str);
     // look for reserved word
     auto iter = reserved_words.find(sym);
     if(iter != reserved_words.end()) return {iter->second, token_location};
@@ -210,8 +210,8 @@ Lexer::lex_word(int len, char* c){
 }
 
 Token
-Lexer::lex_number(char* c){
-    assert(std::isdigit(c));
+Lexer::lex_number(){
+    assert(std::isdigit(*current));
 
 }
 

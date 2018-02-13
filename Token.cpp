@@ -1,4 +1,3 @@
-#pragma once
 #include <sstream>
 #include <string>
 #include <cassert>
@@ -70,7 +69,7 @@ Token(char c, Location loc)
       location(loc)
 {}
 
-Token(const char* str, Location loc)
+Token(std::string str, Location loc)
     : name(token_string_literal),
       attr(str),
       location(loc)

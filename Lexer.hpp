@@ -7,7 +7,7 @@
 
 struct Lexer 
 {
-    Lexer(Symbol_table& symbol, std::string& input);
+    Lexer(Symbol_table& symbol, const std::string& input);
 
     // lexical analysis helper functions
     Token scan();
@@ -15,7 +15,7 @@ struct Lexer
 
     bool eof() { return current == end; }
     // take a peek at the NEXT char
-    const char peek() const { return eof() ? 0 : *(current + 1); }
+    const char peek() { return eof() ? 0 : *(current + 1); }
 
     Token lex_punctuator(token_name token);
     Token lex_relop(int len, relational_operators op);
