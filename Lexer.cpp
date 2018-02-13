@@ -233,16 +233,20 @@ Lexer::lex_number(){
         return {decimal, std::stoll(number), token_location)};
     }
 
+    // if next char is e, its an exponent
+    if(peek() == 'e' || peek() == 'E'){
+        accept();
+        while(!eof() && isdigit(*current)) accept();
+        // FIX: What should this token be?
+        return {std::string(start, current), token_location}
+    }
+
     // otherwise, this is now a floating point number
     accept(); // move past the '.'
     while(!eof() && isdigit(*current)) accept();
 
-    std::string fpnum(start, *current);
+    std::string fpnum(start, current);
     return {std::strtod(fpnum), token_location};
-
-    
-
-    return {};
 }
 
 Token
