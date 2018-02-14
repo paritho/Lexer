@@ -19,7 +19,7 @@ Token::Token(symbol symbol, Location loc)
       location(loc)
 { }
 
-Token(keywords key, Location loc)
+Token::Token(keywords key, Location loc)
     : name(token_keywords),
       attr(key),
       location(loc)
@@ -55,23 +55,23 @@ Token::Token(type_specifier ts, Location loc)
           location(loc)
 { }
 
-Token(radix rad, long long value, Location loc)
+Token::Token(radix rad, long long value, Location loc)
     : name(get_int_base(radix)),
       attr(integer_token{rad, value}),
       location(loc)
-{}
+{ }
 
-Token(char c, Location loc)
+Token::Token(char c, Location loc)
     : name(token_character_literal),
       attr(c),
       location(loc)
-{}
+{ }
 
-Token(std::string str, Location loc)
+Token::Token(std::string str, Location loc)
     : name(token_string_literal),
       attr(str),
       location(loc)
-{}
+{ }
 
 Token::Token(double num, Location loc)
     : name(token_floating_point_literal),
