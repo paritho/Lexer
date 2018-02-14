@@ -1,4 +1,4 @@
-
+#include <utility>
 #include "Lexer.hpp"
 
 // construct the lexer
@@ -9,27 +9,27 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
       consumed("")
 { 
     // reserve language words
-    reserved_words.insert({
+    reserved_words.insert(
         // keywords
-        { symbols.get("def"), key_def },
-        { symbols.get("else"), key_else },
-        { symbols.get("if"), key_if },
-        { symbols.get("let"), key_let },
-        { symbols.get("var"), key_var },
+        std::make_pair(symbols.get("def"), key_def),
+        std::make_pair(symbols.get("else"), key_else ),
+        std::make_pair(symbols.get("if"), key_if ),
+        std::make_pair(symbols.get("let"), key_let ),
+        std::make_pair(symbols.get("var"), key_var ),
         // logic ops
-        { symbols.get("and"), op_AND },
-        { symbols.get("or"), op_OR },
-        { symbols.get("not"), op_NOT },
+        std::make_pair(symbols.get("and"), op_AND ),
+        std::make_pair(symbols.get("or"), op_OR ),
+        std::make_pair(symbols.get("not"), op_NOT ),
         // boolean literal
-        { symbols.get("true"), true },
-        { symbols.get("false"), false },
+        std::make_pair(symbols.get("true"), true ),
+        std::make_pair(symbols.get("false"), false ),
         // type specifiers
-        { symbols.get("bool"), ts_bool },
-        { symbols.get("char"), ts_char },
-        { symbols.get("int"), ts_int},
-        { symbols.get("float"), ts_float },
-        { symbols.get("void"), ts_void},
-    });
+        std::make_pair(symbols.get("bool"), ts_bool ),
+        std::make_pair(symbols.get("char"), ts_char ),
+        std::make_pair(symbols.get("int"), ts_int),
+        std::make_pair(symbols.get("float"), ts_float ),
+        std::make_pair(symbols.get("void"), ts_void),
+    );
 }
 
 Token 
@@ -200,7 +200,7 @@ Lexer::lex_word(){
     symbol sym = symbols.get(str);
     // look for reserved word
     auto iter = reserved_words.find(sym);
-    if(iter != reserved_words.end()) return {*iter->second, token_location};
+    if(iter != reserved_words.end()) return {iter->second, token_location};
 
     // return the token if not a reserved word
     return {str, token_location};
