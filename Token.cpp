@@ -339,28 +339,38 @@ operator<<(std::ostream& os, Token t){
         case token_hex_int:
         case token_binary_int:
         case token_decimal_int:
-            integer_token intok = t.get_intval_attr();
-            os << display(intok.value);
+            os << display(t.get_intval_attr().value);
+            break;
         case token_floating_point_literal:
             os << display(t.get_float_attr());
+            break;
         case token_boolean_literal:
             os << display(t.get_bool_attr());
+            break;
         case token_character_literal:
             os << display(t.get_ch_attr());
+            break;
         case token_string_literal:
             os << display(t.get_str_attr());
+            break;
         case token_identifier:
             os << display(t.get_sym_attr());
+            break;
         case token_relational_op:
             os << display(t.get_relop_attr());
+            break;
         case token_arithmatic_op:
             os << display(t.get_arthop_attr());
+            break;
         case token_bitwise_op:
             os << display(t.get_bit_attr());
+            break;
         case token_logical_op:
             os << display(t.get_log_attr());
+            break;
         case token_type_specifier:
             os << display(t.get_ts_attr());
+            break;
         default:
             throw std::runtime_error("Invalid token-type for get_attr() call");
     }
