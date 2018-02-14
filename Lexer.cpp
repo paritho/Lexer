@@ -9,27 +9,26 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
       consumed("")
 { 
     // reserve language words
-    reserved_words.insert(
-        // keywords
-        std::make_pair(symbols.get("def"), key_def),
-        std::make_pair(symbols.get("else"), key_else ),
-        std::make_pair(symbols.get("if"), key_if ),
-        std::make_pair(symbols.get("let"), key_let ),
-        std::make_pair(symbols.get("var"), key_var ),
-        // logic ops
-        std::make_pair(symbols.get("and"), op_AND ),
-        std::make_pair(symbols.get("or"), op_OR ),
-        std::make_pair(symbols.get("not"), op_NOT ),
-        // boolean literal
-        std::make_pair(symbols.get("true"), true ),
-        std::make_pair(symbols.get("false"), false ),
-        // type specifiers
-        std::make_pair(symbols.get("bool"), ts_bool ),
-        std::make_pair(symbols.get("char"), ts_char ),
-        std::make_pair(symbols.get("int"), ts_int),
-        std::make_pair(symbols.get("float"), ts_float ),
-        std::make_pair(symbols.get("void"), ts_void)
-    );
+    //keywords
+    reserved_words.insert(std::make_pair(symbols.get("def"), key_def));
+    reserved_words.insert(std::make_pair(symbols.get("else"), key_else));
+    reserved_words.insert(std::make_pair(symbols.get("if"), key_if));
+    reserved_words.insert(std::make_pair(symbols.get("let"), key_let));
+    reserved_words.insert(std::make_pair(symbols.get("var"), key_var));
+    // logic ops
+    reserved_words.insert(std::make_pair(symbols.get("and"), op_AND));
+    reserved_words.insert(std::make_pair(symbols.get("or"), op_OR));
+    reserved_words.insert(std::make_pair(symbols.get("not"), op_NOT));
+    // boolean literal
+    reserved_words.insert(std::make_pair(symbols.get("true"), true));
+    reserved_words.insert(std::make_pair(symbols.get("false"), false));
+    // type specifiers
+    reserved_words.insert(std::make_pair(symbols.get("bool"), ts_bool));
+    reserved_words.insert(std::make_pair(symbols.get("char"), ts_char));
+    reserved_words.insert(std::make_pair(symbols.get("int"), ts_int));
+    reserved_words.insert(std::make_pair(symbols.get("float"), ts_float));
+    reserved_words.insert(std::make_pair(symbols.get("void"), ts_void));
+    
 }
 
 Token 
