@@ -11,24 +11,24 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
     // reserve language words
     reserved_words.insert({
         //keywords
-        {symbols.get("def"), key_def},
-        {symbols.get("else"), key_else},
-        {symbols.get("if"), key_if},
-        {symbols.get("let"), key_let},
-        {symbols.get("var"), key_var},
+        Token {symbols.get("def"), key_def},
+        Token {symbols.get("else"), key_else},
+        Token {symbols.get("if"), key_if},
+        Token {symbols.get("let"), key_let},
+        Token {symbols.get("var"), key_var},
         // logic ops
-        {symbols.get("and"), op_AND},
-        {symbols.get("or"), op_OR},
-        {symbols.get("not"), op_NOT},
+        Token {symbols.get("and"), op_AND},
+        Token {symbols.get("or"), op_OR},
+        Token {symbols.get("not"), op_NOT},
         // boolean literal
-        {symbols.get("true"), true},
-        {symbols.get("false"), false},
+        Token {symbols.get("true"), true},
+        Token {symbols.get("false"), false},
         // type specifiers
-        {symbols.get("bool"), ts_bool},
-        {symbols.get("char"), ts_char},
-        {symbols.get("int"), ts_int},
-        {symbols.get("float"), ts_float},
-        {symbols.get("void"), ts_void},
+        Token {symbols.get("bool"), ts_bool},
+        Token {symbols.get("char"), ts_char},
+        Token {symbols.get("int"), ts_int},
+        Token {symbols.get("float"), ts_float},
+        Token {symbols.get("void"), ts_void},
     });
     
 }
