@@ -1,0 +1,14 @@
+This
+is
+a
+test
+if(x==1)
+bool foo = true;
+0x1111
+0B0001
+'p'
+#problems with escape sequence to fix
+#'\n'
+1001
+#problems with string to fix
+"this is a string"
