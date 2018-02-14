@@ -8,7 +8,7 @@ Token::Token()
 {}
 
 Token::Token(token_name name, Location loc)
-    : name(name), location(loc);
+    : name(name), location(loc),
 {
     assert(!has_attribute());
 }
@@ -324,7 +324,7 @@ operator<<(std::ostream& os, Token token){
 
     if(!token.has_attribute()) return os << display(token.get_name()) << '>';
 
-    os << display(token.get_name()) << ': ';
+    os << display(token.get_name()) << ": ";
     os << display(token.get_attr()) << ">"; 
     return os;
 }
