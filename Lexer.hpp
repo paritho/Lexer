@@ -1,11 +1,14 @@
 #pragma once
+#include "Token.hpp"
+#include "Symbol.hpp"
+#include "Location.hpp"
+
 #include <string>
 #include <unordered_map>
 #include <cassert>
 #include <cctype>
-#include "Token.hpp"
-#include "Symbol.hpp"
-#include "Location.hpp"
+#include <stdexcept>
+
 
 struct Lexer 
 {

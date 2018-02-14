@@ -88,7 +88,7 @@ Token::Token(bool boolval, Location loc)
 
 
 token_name
-get_int_base(radix base){
+Token::get_int_base(radix base){
     switch(base){
         case binary:
             return token_binary_int;

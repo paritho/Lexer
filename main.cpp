@@ -1,9 +1,11 @@
+#include "Lexer.hpp"
+
 #include <iostream>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
 #include <iomanip>
-#include "Lexer.hpp"
+
 
 
 int

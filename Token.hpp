@@ -1,12 +1,15 @@
 #pragma once
+#include "Token_enums.hpp"
+#include "Location.hpp"
+#include "Symbol.hpp"
+
 #include <cctype>
 #include <iostream>
 #include <string>
 #include <cassert>
 #include <sstream>
-#include "Token_enums.hpp"
-#include "Location.hpp"
-#include "Symbol.hpp"
+#include <stdexcept>
+
 
 struct integer_token {
     radix rad;
