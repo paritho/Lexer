@@ -48,7 +48,7 @@ union attribute
 struct Token 
 {
     // one constructor for each broad type of token
-    Token() = default;
+    Token();
     Token(token_name name, Location loc={});
     Token(symbol symbol, Location loc={});
     Token(keywords key, Location loc={});
