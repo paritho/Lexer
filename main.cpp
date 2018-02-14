@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <iterator>
+#include <stdexcept>
+#include <iomanip>
 #include "Lexer.hpp"
 
 
