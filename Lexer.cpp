@@ -9,25 +9,27 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
       consumed("")
 { 
     // reserve language words
-    //keywords
-    reserved_words.insert(std::make_pair(symbols.get("def"), key_def));
-    reserved_words.insert(std::make_pair(symbols.get("else"), key_else));
-    reserved_words.insert(std::make_pair(symbols.get("if"), key_if));
-    reserved_words.insert(std::make_pair(symbols.get("let"), key_let));
-    reserved_words.insert(std::make_pair(symbols.get("var"), key_var));
-    // logic ops
-    reserved_words.insert(std::make_pair(symbols.get("and"), op_AND));
-    reserved_words.insert(std::make_pair(symbols.get("or"), op_OR));
-    reserved_words.insert(std::make_pair(symbols.get("not"), op_NOT));
-    // boolean literal
-    reserved_words.insert(std::make_pair(symbols.get("true"), true));
-    reserved_words.insert(std::make_pair(symbols.get("false"), false));
-    // type specifiers
-    reserved_words.insert(std::make_pair(symbols.get("bool"), ts_bool));
-    reserved_words.insert(std::make_pair(symbols.get("char"), ts_char));
-    reserved_words.insert(std::make_pair(symbols.get("int"), ts_int));
-    reserved_words.insert(std::make_pair(symbols.get("float"), ts_float));
-    reserved_words.insert(std::make_pair(symbols.get("void"), ts_void));
+    reserved_words.insert({
+        //keywords
+        {symbols.get("def"), key_def},
+        {symbols.get("else"), key_else},
+        {symbols.get("if"), key_if},
+        {symbols.get("let"), key_let},
+        {symbols.get("var"), key_var},
+        // logic ops
+        {symbols.get("and"), op_AND},
+        {symbols.get("or"), op_OR},
+        {symbols.get("not"), op_NOT},
+        // boolean literal
+        {symbols.get("true"), true},
+        {symbols.get("false"), false},
+        // type specifiers
+        {symbols.get("bool"), ts_bool},
+        {symbols.get("char"), ts_char},
+        {symbols.get("int"), ts_int},
+        {symbols.get("float"), ts_float},
+        {symbols.get("void"), ts_void},
+    });
     
 }
 
