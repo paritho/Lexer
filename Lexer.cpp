@@ -36,7 +36,6 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
 Token 
 Lexer::scan(){
 
-    assert(!eof());
     while(!eof()){
 
         token_location = current_location;
@@ -91,8 +90,8 @@ Lexer::scan(){
             case '?':
                 return lex_conditional();
             case '=':
-                if(peek() != '=') return lex_assignment();
-                return lex_relop(2, op_equals);
+                if(peek() == '=') return lex_relop(2, op_equals);
+                return lex_assignment();
 
             // arithmatic ops
             case '+':
@@ -124,7 +123,7 @@ Lexer::scan(){
             case '"':
                 return lex_string();
 
-            default:
+            default: {
                 if(!std::isdigit(*current)) return lex_word();
                 if(std::isdigit(*current)) return lex_number();
                 
@@ -132,7 +131,7 @@ Lexer::scan(){
                 std::stringstream ss;
                 ss << "invalid char" << *current;
                 throw std::runtime_error(ss.str());
-
+            }
         }
     }
     // returns the constructor that gives eof token
@@ -353,7 +352,7 @@ Lexer::accept(){
 // to accept more than one char at a time
 void 
 Lexer::accept(int n){
-    while(n < 0){
+    while(n > 0){
         accept();
         --n;
     }
