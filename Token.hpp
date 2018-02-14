@@ -49,19 +49,19 @@ struct Token
 {
     // one constructor for each broad type of token
     Token() = default;
-    Token(token_name name, Location loc);
-    Token(symbol symbol, Location loc);
-    Token(keywords key, Location loc);
-    Token(relational_operators op, Location loc);
-    Token(arithmatic_operators aop, Location loc);
-    Token(bitwise_operators bop, Location loc);
-    Token(logical_operators lop, Location loc);
-    Token(type_specifier ts, Location loc);
-    Token(radix rad, long long value, Location loc);
-    Token(char c, Location loc);
-    Token(std::string str, Location loc);
-    Token(double num, Location loc);
-    Token(bool boolval, Location loc);
+    Token(token_name name, Location loc={});
+    Token(symbol symbol, Location loc={});
+    Token(keywords key, Location loc={});
+    Token(relational_operators op, Location loc={});
+    Token(arithmatic_operators aop, Location loc={});
+    Token(bitwise_operators bop, Location loc={});
+    Token(logical_operators lop, Location loc={});
+    Token(type_specifier ts, Location loc={});
+    Token(radix rad, long long value, Location loc={});
+    Token(char c, Location loc={});
+    Token(std::string str, Location loc={});
+    Token(double num, Location loc={});
+    Token(bool boolval, Location loc={});
     
     // some comvienence. converts to true if not eof
     explicit operator bool() const { return name != token_eof; }
