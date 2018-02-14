@@ -201,7 +201,7 @@ Lexer::lex_word(){
     symbol sym = symbols.get(str);
     // look for reserved word
     auto iter = reserved_words.find(sym);
-    if(iter != reserved_words.end()) return {iter->second, token_location};
+    if(iter != reserved_words.end()) return {&iter->second, token_location};
 
     // return the token if not a reserved word
     return {str, token_location};
