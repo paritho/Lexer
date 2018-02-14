@@ -204,7 +204,7 @@ Lexer::lex_word(){
     if(iter != reserved_words.end()) return {&iter->second, token_location};
 
     // return the token if not a reserved word
-    return {str, token_location};
+    return {sym, token_location};
 
 }
 
@@ -240,7 +240,7 @@ Lexer::lex_number(){
         accept();
         while(!eof() && isdigit(*current)) accept();
         // FIX: What should this token be?
-        return {std::string(start, current), token_location};
+        return {std::string(start, current).c_str(), token_location};
     }
 
     // otherwise, this is now a floating point number

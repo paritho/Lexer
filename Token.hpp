@@ -25,7 +25,7 @@ union attribute
     attribute(type_specifier ts) : typespec(ts) {}
     attribute(integer_token inttok) : intval(inttok) {}
     attribute(double fp) : floatval(fp) {}
-    attribute(char* str) : str(str){}
+    attribute(const char* str) : str(str){}
     attribute(char c) : ch(c) {}
     attribute(bool truefalse) : boolval(truefalse) {}
  
@@ -39,7 +39,7 @@ union attribute
     type_specifier typespec;
     integer_token intval;
     bool boolval;
-    char* str;
+    const char* str;
     char ch;
     double floatval;
 
@@ -59,7 +59,7 @@ struct Token
     Token(type_specifier ts, Location loc={});
     Token(radix rad, long long value, Location loc={});
     Token(char c, Location loc={});
-    Token(std::string str, Location loc={});
+    Token(const char* str, Location loc={});
     Token(double num, Location loc={});
     Token(bool boolval, Location loc={});
     
@@ -78,6 +78,7 @@ struct Token
     const char* display(char c);
     const char* display(char* str);
     const char* display(double num);
+    const char* display(long long num);
     const char* display(bool boolval);
     const char* display(Location loc);
 
@@ -88,41 +89,18 @@ struct Token
     token_name get_int_base(radix base);
     token_name get_name() { return name; }
 
-    template <typename T>
-    T get_attr(){
-        assert(this->has_attribute());
-
-        switch(name){
-            case token_hex_int:
-            case token_binary_int:
-            case token_decimal_int:
-                return attr.intval;
-            case token_floating_point_literal:
-                return attr.floatval;
-            case token_boolean_literal:
-                return attr.boolval;
-            case token_character_literal:
-                return attr.ch;
-            case token_string_literal:
-                return attr.str;
-            case token_identifier:
-                return attr.sym;
-            case token_relational_op:
-                return attr.relop;
-            case token_arithmatic_op:
-                return attr.arthop;
-            case token_bitwise_op:
-                return attr.bitop;
-            case token_logical_op:
-                return attr.logop;
-            case token_type_specifier:
-                return attr.typespec;
-
-            default:
-                return std::runtime_error("Invalid token-type for get_attr() call");
-        }
-     }
-
+    symbol get_sym_attr(){return attr.sym;};
+    keywords get_key_attr(){return attr.key;};
+    relational_operators get_relop_attr(){return attr.relop;};
+    arithmatic_operators get_arthop_attr(){return attr.arthop;};
+    bitwise_operators get_bit_attr(){return attr.bitop;};
+    logical_operators get_log_attr(){return attr.logop;};
+    type_specifier get_ts_attr(){return attr.typespec;};
+    integer_token get_intval_attr(){return attr.intval;};
+    bool get_bool_attr(){ return attr.boolval;};
+    const char* get_str_attr() {return attr.str;};
+    char get_ch_attr() {return attr.ch;};
+    double get_float_attr() {return attr.floatval;};
 
     private:
         token_name name;
@@ -131,4 +109,4 @@ struct Token
 };
 
 std::ostream& 
-operator<<(std::ostream& os, Token token);
+operator<<(std::ostream& os, Token t);

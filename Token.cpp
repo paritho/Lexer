@@ -8,14 +8,15 @@ Token::Token()
 {}
 
 Token::Token(token_name name, Location loc)
-    : name(name), location(loc),
+    : name(name), 
+      location(loc)
 {
     assert(!has_attribute());
 }
 
 Token::Token(symbol symbol, Location loc)
     : name(token_identifier),
-      attribute(symbol),
+      attr(symbol),
       location(loc)
 { }
 
@@ -45,18 +46,18 @@ Token::Token(bitwise_operators bop, Location loc)
 
 Token::Token(logical_operators lop, Location loc)
     : name(token_logical_op),
-          attr(lop),
-          location(loc)
+      attr(lop),
+      location(loc)
 { }
 
 Token::Token(type_specifier ts, Location loc)
     : name(token_type_specifier),
-          attr(ts),
-          location(loc)
+      attr(ts),
+      location(loc)
 { }
 
 Token::Token(radix rad, long long value, Location loc)
-    : name(get_int_base(radix)),
+    : name(get_int_base(rad)),
       attr(integer_token{rad, value}),
       location(loc)
 { }
@@ -67,7 +68,7 @@ Token::Token(char c, Location loc)
       location(loc)
 { }
 
-Token::Token(std::string str, Location loc)
+Token::Token(const char* str, Location loc)
     : name(token_string_literal),
       attr(str),
       location(loc)
@@ -80,9 +81,9 @@ Token::Token(double num, Location loc)
 { }
 
 Token::Token(bool boolval, Location loc)
-        : name(token_boolean_literal),
-          attr(boolval),
-          location(loc)
+    : name(token_boolean_literal),
+      attr(boolval),
+      location(loc)
 { }
 
 
@@ -156,8 +157,8 @@ display(token_name name){
 }
 
 const char* 
-display(symbol symbol){
-    return symbol;
+display(symbol sym){
+    return sym->c_str();
 }                  
 
 const char* 
@@ -242,7 +243,7 @@ display(logical_operators op){
 
 const char* 
 display(type_specifier type){
-    switch(op){
+    switch(type){
         case ts_bool:
             return "bool";
         case ts_char:
@@ -258,25 +259,33 @@ display(type_specifier type){
 
 const char* 
 display(integer_token num){
-    return std::to_string(num.value)
+    return std::to_string(num.value).c_str();
 }
 
-const char
+const char*
 display(char c){ 
-    ostringstream ss;
+    std::ostringstream ss;
     ss << '\'' << c << '\'';       
-    return ss.str();
+    return ss.str().c_str();
 }
 
 const char* 
-display(char* str){
+display(const char* str){
     return str;
 }
 
 const char* 
 display(double num){
-    // std::to_string can have problems with floats
-    return std::to_wstring(num);
+    std::ostringstream ss;
+    ss << num;
+    return ss.str().c_str();
+}
+
+const char* 
+display(long long num){
+    std::ostringstream ss;
+    ss << num;
+    return ss.str().c_str();
 }
 
 const char*
@@ -285,12 +294,12 @@ display(bool boolval){
 }
 
 const char* 
-display(location loc){
-    ostringstream ss;
-    ss << "line: " << loc.line;
-    ss << " column: " << loc.column;
-    ss << " in file: " << loc.file;
-    return ss.str();
+display(Location loc){
+    std::ostringstream ss;
+    ss << "line: " << loc.get_line();
+    ss << " column: " << loc.get_column();
+    ss << " in file: " << loc.get_file();
+    return ss.str().c_str();
 }
 
 bool
@@ -305,11 +314,11 @@ Token::has_attribute(){
         case token_character_literal:
         case token_string_literal:
         case token_identifier:
-        case relational_operators:
-        case arithmatic_operators:
-        case bitwise_operators:
-        case logical_operators:
-        case type_specifier:
+        case token_relational_op:
+        case token_arithmatic_op:
+        case token_bitwise_op:
+        case token_logical_op:
+        case token_type_specifier:
                 return true;
         default:
                 return false;
@@ -318,13 +327,45 @@ Token::has_attribute(){
 
 
 std::ostream& 
-operator<<(std::ostream& os, Token token){
+operator<<(std::ostream& os, Token t){
 
     os << '<';
 
-    if(!token.has_attribute()) return os << display(token.get_name()) << '>';
+    if(!t.has_attribute()) return os << display(t.get_name()) << '>';
+    
+    os << display(t.get_name()) << ": ";
 
-    os << display(token.get_name()) << ": ";
-    os << display(token.get_attr()) << ">"; 
+    switch(t.get_name()){
+        case token_hex_int:
+        case token_binary_int:
+        case token_decimal_int:
+            integer_token intok = t.get_intval_attr();
+            os << display(intok.value);
+        case token_floating_point_literal:
+            os << display(t.get_float_attr());
+        case token_boolean_literal:
+            os << display(t.get_bool_attr());
+        case token_character_literal:
+            os << display(t.get_ch_attr());
+        case token_string_literal:
+            os << display(t.get_str_attr());
+        case token_identifier:
+            os << display(t.get_sym_attr());
+        case token_relational_op:
+            os << display(t.get_relop_attr());
+        case token_arithmatic_op:
+            os << display(t.get_arthop_attr());
+        case token_bitwise_op:
+            os << display(t.get_bit_attr());
+        case token_logical_op:
+            os << display(t.get_log_attr());
+        case token_type_specifier:
+            os << display(t.get_ts_attr());
+        default:
+            throw std::runtime_error("Invalid token-type for get_attr() call");
+    }
+
+    os << '>';
+
     return os;
 }
