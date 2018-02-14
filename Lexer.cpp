@@ -28,7 +28,7 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
         std::make_pair(symbols.get("char"), ts_char ),
         std::make_pair(symbols.get("int"), ts_int),
         std::make_pair(symbols.get("float"), ts_float ),
-        std::make_pair(symbols.get("void"), ts_void),
+        std::make_pair(symbols.get("void"), ts_void)
     );
 }
 
