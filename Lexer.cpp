@@ -1,4 +1,4 @@
-#include <utility>
+
 #include "Lexer.hpp"
 
 // construct the lexer
@@ -17,9 +17,9 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
         {symbols.get("let"),  Token(key_let)},
         {symbols.get("var"),  Token(key_var)},
         // logic ops
-        {symbols.get("and"),  Token(op_AND)},
-        {symbols.get("or"),  Token(op_OR)},
-        {symbols.get("not"),  Token(op_NOT)},
+        {symbols.get("and"),  Token(logop_AND)},
+        {symbols.get("or"),  Token(logop_OR)},
+        {symbols.get("not"),  Token(logop_NOT)},
         // boolean literal
         {symbols.get("true"),  Token(true)},
         {symbols.get("false"),  Token(false)},
@@ -196,11 +196,16 @@ Lexer::lex_word(){
 
     // build word
     std::string str(start, current);
+    
     // add it to the symbol table
     symbol sym = symbols.get(str);
     // look for reserved word
     auto iter = reserved_words.find(sym);
-    if(iter != reserved_words.end()) return {&iter->second, token_location};
+       
+    if(iter != reserved_words.end()) {
+        Token& token = iter->second;
+        return {token.get_name(), token.get_attr(),token_location};
+    }
 
     // return the token if not a reserved word
     return {sym, token_location};
@@ -293,29 +298,8 @@ Lexer::lex_character(){
     // is the character an escape sequence?
     else{
         assert(*current == '\\');
-        switch(peek()){
-            case '\'':
-            case '\"':
-            case '\\':
-                c = peek();
-            case 'a':
-                c = '\a';
-            case 'b':
-                c = '\b';
-            case 'f':
-                c = '\f';
-            case 'n':
-                c = '\n';
-            case 'r':
-                c = '\r';
-            case 't':
-                c = '\t';
-            case 'v':
-                c = '\v';
-            default:
-                throw std::runtime_error("Invalid escape sequence");
-        }
-        // advance beyond escape sequence
+        c = get_escape_sequence();
+        // advance beyond escaped chars
         accept(2);
     }
 
@@ -329,7 +313,58 @@ Lexer::lex_character(){
 
 Token
 Lexer::lex_string(){
-    return {};
+    assert(*current == '"');
+    // move past "
+    accept();
+
+    if(eof()) throw std::runtime_error("Unterminated string");
+
+    std::string sret;
+
+    while(*current != '"') {
+        if(*current == '\n') throw std::runtime_error("Multi-line strings not allowed");
+
+        // assume its a normal char
+        char c = *current;
+
+        if(*current == '\\') {
+            c = get_escape_sequence();
+        }
+                
+        sret += c;
+        accept();
+    }
+    // move past final "
+    accept();
+    
+    return {symbols.get(sret), token_string_literal, token_location};
+}
+
+char
+Lexer::get_escape_sequence(){
+    assert(*current == '\\');
+        switch(peek()){
+            case '\'':
+            case '\"':
+            case '\\':
+                return peek();
+            case 'a':
+                return '\a';
+            case 'b':
+                return '\b';
+            case 'f':
+                return '\f';
+            case 'n':
+                return '\n';
+            case 'r':
+                return '\r';
+            case 't':
+                return '\t';
+            case 'v':
+                return '\v';
+            default:
+                throw std::runtime_error("Invalid escape sequence");
+        }
 }
 
 // this should be called from skip_comment ONLY
@@ -381,5 +416,5 @@ Lexer::skip_newline(){
 void 
 Lexer::skip_comment(){
     assert(*current == '#');
-    while(is_comment_character(*current)) ignore();
+    while(!eof() && is_comment_character(*current)) ignore();
 }

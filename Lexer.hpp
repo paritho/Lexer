@@ -37,6 +37,7 @@ struct Lexer
     Token lex_string();
 
     // other helpful functions
+    char get_escape_sequence();
     bool is_comment_character(char ch);
     
     void accept();

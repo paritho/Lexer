@@ -72,9 +72,9 @@ enum bitwise_operators
 
 enum logical_operators 
 {
-    op_AND,
-    op_OR,
-    op_NOT,
+    logop_AND,
+    logop_OR,
+    logop_NOT,
 };
 
 enum keywords

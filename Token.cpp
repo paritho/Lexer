@@ -14,10 +14,21 @@ Token::Token(token_name name, Location loc)
     assert(!has_attribute());
 }
 
+Token::Token(token_name name, attribute at, Location loc)
+    : name(name),
+      attr(at)
+{ }
+
 Token::Token(symbol symbol, Location loc)
     : name(token_identifier),
       attr(symbol),
       location(loc)
+{ }
+
+// to construct string literal tokens
+Token::Token(symbol str, token_name name, Location loc)
+    : name(name),
+      attr(str)
 { }
 
 Token::Token(keywords key, Location loc)
@@ -68,12 +79,6 @@ Token::Token(char c, Location loc)
       location(loc)
 { }
 
-Token::Token(const char* str, Location loc)
-    : name(token_string_literal),
-      attr(str),
-      location(loc)
-{ }
-
 Token::Token(double num, Location loc)
     : name(token_floating_point_literal),
       attr(num),
@@ -100,7 +105,7 @@ Token::get_int_base(radix base){
 }
 
 // functions to make the token display in the console
-const char* 
+std::string
 display(token_name name){
     switch(name){
         case token_left_brace:
@@ -126,7 +131,7 @@ display(token_name name){
         case token_assignment_op:
             return "assignment operator";
         case token_relational_op:
-            return "relaptional operator";
+            return "relational operator";
         case token_arithmatic_op:
             return "arithmatic operator";
         case token_bitwise_op:
@@ -156,12 +161,12 @@ display(token_name name){
     }
 }
 
-const char* 
+std::string
 display(symbol sym){
-    return sym->c_str();
+    return *sym;
 }                  
 
-const char* 
+std::string
 display(keywords keyword){
     switch(keyword){
         case key_def:
@@ -174,74 +179,76 @@ display(keywords keyword){
             return "let";
         case key_var:
             return "var";
+        default:
+            throw std::runtime_error("not a keyword");
     }
 }
 
-const char* 
+std::string
 display(relational_operators op){
     switch(op){
         case op_equals:
-            return "equals";
+            return "== ";
         case op_notequal:
-            return "not equals";
+            return "!= ";
         case op_lessthan:
-            return "less than";
+            return "< ";
         case op_greaterthan:
-            return "greater than";
+            return "> ";
         case op_ltequals:
-            return "less than or equals";
+            return "<= ";
         case op_gtequals:
-            return "greater than or equals";
+            return ">= ";
     }
 }
 
-const char* 
+std::string
 display(arithmatic_operators op){
     switch(op){
         case op_plus:
-            return "plus";
+            return "+ ";
         case op_minus:
-            return "minus";
+            return "- ";
         case op_mult:
-            return "multiply";
+            return "* ";
         case op_divide:
-            return "divide";
+            return "/ ";
         case op_ltequals:
-            return "modulo";
+            return "\% ";
     }
 }
 
-const char* 
+std::string
 display(bitwise_operators op){
     switch(op){
         case op_and:
-            return "&";
+            return "& ";
         case op_or:
-            return "|";
+            return "| ";
         case op_xor:
-            return "^";
+            return "^ ";
         case op_leftshift:
-            return "<<";
+            return "<< ";
         case op_rightshift:
-            return ">>";
+            return ">> ";
         case op_not:
-            return "~";
+            return "~ ";
     }
 }
 
-const char* 
+std::string
 display(logical_operators op){
     switch(op){
-        case op_AND:
+        case logop_AND:
             return "and";
-        case op_OR:
+        case logop_OR:
             return "or";
-        case op_NOT:
+        case logop_NOT:
             return "not";  
     }
 }
 
-const char* 
+std::string
 display(type_specifier type){
     switch(type){
         case ts_bool:
@@ -257,49 +264,74 @@ display(type_specifier type){
     }
 }
 
-const char* 
+std::string 
 display(integer_token num){
-    return std::to_string(num.value).c_str();
+    return std::to_string(num.value);
 }
 
-const char*
+std::string
 display(char c){ 
     std::ostringstream ss;
-    ss << '\'' << c << '\'';       
-    return ss.str().c_str();
+    // if the char is an escape char, we need to escape
+    // it to show it
+    std::string s;
+    switch(c){
+        case '\a':
+            s = "\\a";
+            break;
+        case '\b':
+            s = "\\b";
+            break;
+        case '\f':
+            s = "\\f";
+            break;
+        case '\n':
+            s = "\\n";
+            break;
+        case '\r':
+            s = "\\r";
+            break;
+        case '\t':
+            s = "\\t";
+            break;
+        case '\v':
+            s = "\\v";
+            break;
+        default:
+            s += c;
+    }
+
+    ss << s;
+
+    return ss.str();
 }
 
-const char* 
-display(const char* str){
-    return str;
-}
-
-const char* 
+std::string
 display(double num){
     std::ostringstream ss;
     ss << num;
-    return ss.str().c_str();
+    return ss.str();
 }
 
-const char* 
+std::string
 display(long long num){
     std::ostringstream ss;
     ss << num;
-    return ss.str().c_str();
+    return ss.str();
 }
 
-const char*
+std::string
 display(bool boolval){
     return boolval ? "true" : "false";
 }
 
-const char* 
+std::string 
 display(Location loc){
     std::ostringstream ss;
     ss << "line: " << loc.get_line();
     ss << " column: " << loc.get_column();
     ss << " in file: " << loc.get_file();
-    return ss.str().c_str();
+    return ss.str();
 }
 
 bool
@@ -325,12 +357,11 @@ Token::has_attribute(){
     }
 }
 
-
 std::ostream& 
 operator<<(std::ostream& os, Token t){
 
     os << '<';
-
+    
     if(!t.has_attribute()) return os << display(t.get_name()) << '>';
     
     os << display(t.get_name()) << ": ";
@@ -370,6 +401,9 @@ operator<<(std::ostream& os, Token t){
             break;
         case token_type_specifier:
             os << display(t.get_ts_attr());
+            break;
+        case token_keywords:
+            os << display(t.get_key_attr());
             break;
         default:
             throw std::runtime_error("Invalid token-type for get_attr() call");

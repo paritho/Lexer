@@ -4,9 +4,6 @@
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
-#include <iomanip>
-
-
 
 int
 main(int argc, char** argv)

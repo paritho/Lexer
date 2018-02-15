@@ -1,14 +1,15 @@
-This
-is
-a
-test
-if(x==1)
+test these identifiers
+#if(x == 1)
 bool foo = true;
-0x1111
-0B0001
-'p'
-#problems with escape sequence to fix
+int x & 4;
+"This is one string"
+#0x1111
+#0B0001
+#'p'
 #'\n'
-1001
-#problems with string to fix
+#1001
+#problems with fp to fix
+#zebra << horse >> cow != pig ? if {foo} == ^
+#| ~ + % /
+#'p' '\n'
 "this is a string"
