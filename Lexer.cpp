@@ -187,12 +187,12 @@ Lexer::lex_assignment(){
 Token 
 Lexer::lex_word(){
 
-    assert(std::isalpha(*current));
+    assert(is_basic_character(*current));
     const char* start = current;
     // accept first char
     accept();
     // accept subsequent char if alphanumeric
-    while(!eof() && std::isalnum(*current)) accept();
+    while(!eof() && is_basic_character(*current)) accept();
 
     // build word
     std::string str(start, current);
@@ -238,7 +238,7 @@ Lexer::lex_number(){
     if(*current == 'e' || *current == 'E'){
         accept();
         while(!eof() && isdigit(*current)) accept();
-        
+
         // NOTE: should this be something other than a string?
         std::string st(start, current);
         return {symbols.get(st), token_floating_point_literal, token_location};
@@ -375,6 +375,11 @@ Lexer::get_escape_sequence(){
 bool 
 Lexer::is_comment_character(char c){
     return c != '\n';
+}
+
+bool
+Lexer::is_basic_character(char c){
+    return c == '_' || std::isalnum(c);
 }
 
 void

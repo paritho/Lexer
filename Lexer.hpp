@@ -39,6 +39,7 @@ struct Lexer
     // other helpful functions
     char get_escape_sequence();
     bool is_comment_character(char ch);
+    bool is_basic_character(char c);
     
     void accept();
     void accept(int n);
