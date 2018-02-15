@@ -351,6 +351,7 @@ Token::has_attribute(){
         case token_bitwise_op:
         case token_logical_op:
         case token_type_specifier:
+        case token_keywords:
                 return true;
         default:
                 return false;

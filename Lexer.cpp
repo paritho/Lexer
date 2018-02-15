@@ -206,7 +206,7 @@ Lexer::lex_word(){
        
     if(iter != reserved_words.end()) {
         Token& token = iter->second;
-        return {token.get_name(), token.get_attr(),token_location};
+        return {token.get_name(), token.get_attr(), token_location};
     }
 
     // return the token if not a reserved word
