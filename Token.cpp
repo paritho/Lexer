@@ -25,7 +25,7 @@ Token::Token(symbol symbol, Location loc)
       location(loc)
 { }
 
-// to construct string literal tokens
+// to construct string literal and exponential tokens
 Token::Token(symbol str, token_name name, Location loc)
     : name(name),
       attr(str)
