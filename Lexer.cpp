@@ -234,20 +234,23 @@ Lexer::lex_number(){
     accept();
     while(!eof() && isdigit(*current)) accept();
 
-    if(peek() != '.') {
+    // if next char is e, its an exponent
+    if(*current == 'e' || *current == 'E'){
+        accept();
+        while(!eof() && isdigit(*current)) accept();
+        
+        // NOTE: should this be something other than a string?
+        std::string st(start, current);
+        return {symbols.get(st), token_floating_point_literal, token_location};
+    }
+
+    // determine if its a whole or fractional number
+    if(*current != '.') {
         std::string number(start, current);
         return {decimal, std::stoll(number), token_location};
     }
 
-    // if next char is e, its an exponent
-    if(peek() == 'e' || peek() == 'E'){
-        accept();
-        while(!eof() && isdigit(*current)) accept();
-        // FIX: What should this token be?
-        return {std::string(start, current).c_str(), token_location};
-    }
-
-    // otherwise, this is now a floating point number
+    // fractional bit
     accept(); // move past the '.'
     while(!eof() && isdigit(*current)) accept();
 
