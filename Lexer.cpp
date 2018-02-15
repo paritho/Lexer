@@ -124,9 +124,11 @@ Lexer::scan(){
                 return lex_string();
 
             default: {
-                if(!std::isdigit(*current)) return lex_word();
                 if(std::isdigit(*current)) return lex_number();
-                
+                // is_basic_character() tests for digits, but 
+                // digits will have been found in the preceeding if
+                if(is_basic_character(*current)) return lex_word();
+                                
                 // if we get here is an invalid char
                 std::stringstream ss;
                 ss << "invalid char" << *current;
