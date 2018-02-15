@@ -1,15 +1,19 @@
-test these identifiers
-#if(x == 1)
+test these identifiers __true
+if(x == 1)
+for def let var:
 bool foo = true;
 int x & 4;
+true and false;
 "This is one string"
 #0x1111
 #0B0001
-#'p'
-#'\n'
-#1001
+1001
 #problems with fp to fix
-#zebra << horse >> cow != pig ? if {foo} == ^
-#| ~ + % /
-#'p' '\n'
+123.456
+12e456
+zebra << horse >> cow != pig ? if {foo} == ^
+| ~ + % /
+'p' '\n'
 "this is a string"
+#invalid character
+`
