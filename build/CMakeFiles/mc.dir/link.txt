@@ -1,1 +1,0 @@
-/usr/bin/c++  -std=c++1z -lstdc++  -rdynamic CMakeFiles/mc.dir/main.cpp.o CMakeFiles/mc.dir/Lexer.cpp.o CMakeFiles/mc.dir/Token.cpp.o  -o mc 
