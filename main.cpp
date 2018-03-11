@@ -1,4 +1,5 @@
 #include "Lexer.hpp"
+#include "Parser.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -20,9 +21,13 @@ main(int argc, char** argv)
     
 
     Symbol_table stable;
-    Lexer lex(stable, file_contents);
+    /*Lexer lex(stable, file_contents);
 
     while(Token token = lex())
         std::cout << token << '\n';
+    */
+
+    Parser parse(stable, file_contents);
+     
 
 }
