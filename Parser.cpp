@@ -1,11 +1,13 @@
 
 #include "Parser.hpp"
+#include <cassert>
+
 
 Parser::Parser(Symbol_table& syms, const std::string& source)
     : lexer(syms, source),
       token()
 {
-
+    fetch();
 }
 
 void 
@@ -151,62 +153,128 @@ Parser::parse_program(){
 // member functions
 token_name 
 Parser::lookahead(){
-
+    assert(!token_que.empty);
+    return token_que.front().get_name();
 }
 
 token_name 
 Parser::lookahead(int n){
-
+    
 }
 
 Token 
 Parser::match(token_name token){
+    if(lookahead() == token) return accept();
 
+    std::stringstream ss;
+    Location loc = peek().get_loc();
+    ss << "Syntax error at: " << peek().display(loc);
 }
 
 Token 
 Parser::matchif(token_name token){
-
+    if(lookahead() == token) return accept();
+    return {};
 }
 
 Token 
 Parser::matchif_eq(){
-
+    if(lookahead() == token_relational_op){
+      Token token = peek();
+      switch(token.get_relop_attr()){
+        case op_equals:
+        case op_notequal:
+          return accept();
+        default:
+          return {};
+      }
+    }
+    return {};
 }
 
 Token 
 Parser::matchif_rel(){
-
+    if(lookahead() == token_relational_op){
+      Token token = peek();
+      switch(token.get_relop_attr()){
+        case op_lessthan:
+        case op_greaterthan:
+        case op_ltequals:
+        case op_gtequals:
+          return accept();
+        default:
+          return {};
+      }
+    }
+    return {};
 }
 
 Token
 Parser::matchif_shift(){
-
+    if(lookahead() == token_bitwise_op){
+      Token token = peek();
+      switch(token.get_bit_attr()){
+        case op_leftshift:
+        case op_rightshift:
+          return accept();
+        default:
+          return {};
+      }
+    }
+    return {};
 }
 
 Token 
 Parser::matchif_add(){
-
+    if(lookahead() == token_arithmatic_op){
+      Token token = peek();
+      switch(token.get_arthop_attr()){
+        case op_plus:
+        case op_minus:
+          return accept();
+        default:
+          return {};
+      }
+    }
+    return {};
 }
 
 Token 
 Parser::matchif_mult(){
-
+    if(lookahead() == token_arithmatic_op){
+        Token token = peek();
+        switch(token.get_arthop_attr()){
+          case op_mult:
+          case op_divide:
+          case op_mod:
+            return accept();
+          default:
+            return {};
+        }
+    }
+    return {};
+   
 }
 
 Token
 Parser::accept(){
+    Token token = peek();
+    token_que.pop_front();
+    if(token_que.empty()) fetch();
 
+    return token;
 }
 
 Token
 Parser::peek(){
+  assert(!token_que.empty());
+  return token_que.front();
 
 }
 
 void
 Parser::fetch(){
-    
+    token_que.push_back(lexer());
 }
 
 
