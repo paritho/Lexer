@@ -92,6 +92,7 @@ struct Token
     token_name get_int_base(radix base);
     token_name get_name() { return name; }
     attribute get_attr(){return attr;}
+    Location get_loc(){return location;}
 
     symbol get_sym_attr() const;
     const symbol get_str_attr() const;
