@@ -62,7 +62,7 @@ struct Parser{
 
     // member vars
     Lexer lexer;
-    std::deque<Token> token;
+    std::deque<Token> token_que;
 
 };
 
