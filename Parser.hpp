@@ -39,6 +39,7 @@ struct Parser{
     // stmts
     void parse_stmt();
     void parse_block_stmt();
+    void parse_breaking_stmt();
     void parse_if_stmt();
     void parse_while_stmt();
     void parse_stmtseq();
