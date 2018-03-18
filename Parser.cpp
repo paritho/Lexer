@@ -285,36 +285,88 @@ Parser::parse_primary_expr(){
 // | decl | expr
 void 
 Parser::parse_stmt(){
-
+    switch(lookahead()){
+        case token_left_brace:
+            parse_block_stmt();
+            return;
+        case key_if:
+            parse_if_stmt();
+            return;
+        case key_while:
+            parse_while_stmt();
+            return;
+        case key_break:
+        case key_continue:
+            parse_breaking_stmt();
+            return;
+        case key_return:
+            parse_return_stmt;
+            return;
+        case key_def:
+            parse_decl();
+            return;
+        default:
+            parse_primary_expr();
+    }
 }
 
 // { stmtseq }
 void
 Parser::parse_block_stmt(){
+    match(token_left_brace);
+    parse_stmtseq();
+    match(token_right_brace);
+}
 
+// break ; | continue ;
+void
+Parser::parse_breaking_stmt(){
+    matchif(key_break);
+    matchif(key_continue);
+    match(token_semicolon);
 }
 
 // if ( expr ) stmt | if ( expr ) stmt else stmt
 void 
 Parser::parse_if_stmt(){
-
+    assert(peek().get_name() == key_if);
+    accept();
+    match(token_left_paren);
+    parse_primary_expr();
+    match(token_right_paren);
+    parse_stmt();
+    if(lookahead() == key_else) parse_stmt();
 }
 
 // while ( expr ) stmt
 void 
 Parser::parse_while_stmt(){
-
+    assert(peek().get_name() == key_while);
+    accept();
+    match(token_left_paren);
+    parse_primary_expr();
+    match(token_right_paren);
+    parse_stmt();
 }
 
+// stmtseq stmt | stmt
 void
 Parser::parse_stmtseq(){
+    while(lookahead() != token_right_brace) parse_stmt();
 
 }
 
 // return expr ; | return ;
 void 
 Parser::parse_return_stmt(){
-
+    assert(peek().get_name() == key_return);
+    accept();
+    if(lookahead() == token_semicolon) {
+        match(token_semicolon);
+        return;
+    }
+    parse_primary_expr();
+    match(token_semicolon);
 }
 
 // func decl | local decl
@@ -331,6 +383,7 @@ Parser::parse_decl(){
         default:
             throw std::runtime_error("Declaration Expected");
     }
+  return;
 }
 
 // obj def
@@ -433,9 +486,7 @@ Parser::parse_parameter(){
 // declseq decl | decl
 void 
 Parser::parse_decl_seq(){
-    parse_decl();
-    while(){} // what is a decl seq?
-
+    while(!token_que.empty()) parse_decl;
 }
 
 // declseq
