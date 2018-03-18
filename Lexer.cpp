@@ -12,11 +12,15 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
     reserved_words.insert({
         //keywords
         {symbols.get("as"), Token(key_as)},
+        {symbols.get("break"), Token(key_break)},
+        {symbols.get("continue"), Token(key_continue)},
         {symbols.get("def"), Token(key_def)},
         {symbols.get("else"),  Token(key_else)},
         {symbols.get("if"),  Token(key_if)},
         {symbols.get("let"),  Token(key_let)},
+        {symbols.get("return"), Token(key_return)},
         {symbols.get("var"),  Token(key_var)},
+        {symbols.get("while"), Token(key_while)},
         // logic ops
         {symbols.get("and"),  Token(logop_AND)},
         {symbols.get("or"),  Token(logop_OR)},
