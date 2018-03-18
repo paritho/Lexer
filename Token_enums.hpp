@@ -79,11 +79,17 @@ enum logical_operators
 
 enum keywords
 {
+    key_as,
+    key_break,
+    key_continue,
     key_def,
     key_else,
     key_if,
     key_let,
+    key_return,
     key_var,
+    key_while,
+
 };
 
 // helper enums
