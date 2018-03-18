@@ -11,6 +11,7 @@ Lexer::Lexer(Symbol_table& symbol, const std::string& input)
     // reserve language words
     reserved_words.insert({
         //keywords
+        {symbols.get("as"), Token(key_as)},
         {symbols.get("def"), Token(key_def)},
         {symbols.get("else"),  Token(key_else)},
         {symbols.get("if"),  Token(key_if)},
