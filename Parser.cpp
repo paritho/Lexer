@@ -14,30 +14,43 @@ Parser::Parser(Symbol_table& syms, const std::string& source)
 void
 Parser::parse_type(){
   parse_postfix_type();
-
 }
 
 // void | bool | int | float | char
 // | ( type list? ) -> type | type
 void 
 Parser::parse_basic_type(){
+    parse_type_list();
 
-    
+    Token token = peek();
 
+    assert( token.get_name() == type_specifier );
+
+    switch(token.get_ts_attr()){
+        case ts_void:
+        case ts_bool:
+        case ts_int:
+        case ts_float:
+        case ts_char:
+            return;
+        default:
+    }
+    return;
 }
 
 // type-list , type | type
 void 
 Parser::parse_type_list(){
-    // while (type) parse_basic_type()
-
+    parse_basic_type();
+    while(lookahead() == token_semicolon) parse_basic_type(); 
 }
 
 // post * | post const | post volatile | post [ expr ]
-// | post [] | type
+// | post [] | basic type
 void
 Parser::parse_postfix_type(){
-
+    parse_basic_type();
+    
 
 }
 
@@ -97,17 +110,24 @@ Parser::parse_conditional_expr(){
 void 
 Parser::parse_log_or_expr(){
     parse_log_and_expr();
-
-    while(matchif(token_conditional_op)) parse_log_and_expr();
+    if(lookahead() == logop_OR){
+        parse_log_or_expr();
+        Token token = peek();
+        assert(token.get_name() == token_logical_op);
+        if(token.get_log_attr() == logop_OR) accept();
+        parse_log_and_expr();
+    }
 }
 
 // log and expr AND bit or expr | bit or expr
 void 
 Parser::parse_log_and_expr(){
     parse_bit_or_expr();
-    if(lookahead() == op_and) {
+    if(lookahead() == logop_AND) {
         parse_log_and_expr();
-        match(op_and);
+        Token token = peek();
+        assert(token.get_name() == token_logical_op);
+        if(token.get_log_attr() == logop_AND) accept();
         parse_bit_or_expr();
     }
   return;
@@ -117,36 +137,39 @@ Parser::parse_log_and_expr(){
 void 
 Parser::parse_bit_or_expr(){
     parse_bit_xor_expr();
-    if(lookahead() == op_or){
+    if(lookahead() == token_bitwise_op){
         parse_bit_or_expr();
-        match(op_or);
+        Token token = peek();
+        assert(token.get_name() == token_bitwise_op);
+        if(token.get_bit_attr() == op_or) accept();
         parse_bit_xor_expr();
     }
-  return;
 }
 
 // bit xor expr ^ bit and expr | bit and expr
 void 
 Parser::parse_bit_xor_expr(){
     parse_bit_and_expr();
-    if(lookahead() == op_xor){
+    if(lookahead() == token_bitwise_op){
         parse_bit_xor_expr();
-        match(op_xor);
+        Token token = peek();
+        assert(token.get_name() == token_bitwise_op);
+        if(token.get_bit_attr() == op_xor) accept();
         parse_bit_and_expr();
     }
-  return;
 }
 
 // bit and expr & rel expr | rel expr
 void 
 Parser::parse_bit_and_expr(){
     parse_relational_expr();
-    if(lookahead() == op_and){
+    if(lookahead() == token_bitwise_op){
         parse_bit_and_expr();
-        match(op_and);
+        Token token = peek();
+        assert(token.get_name() == token_bitwise_op);
+        if(token.get_bit_attr() == op_and) accept();
         parse_relational_expr();
     }
-  return;
 }
 
 // eq expr == rel expr | eq != rel | rel expr
@@ -300,7 +323,7 @@ Parser::parse_stmt(){
             parse_breaking_stmt();
             return;
         case key_return:
-            parse_return_stmt;
+            parse_return_stmt();
             return;
         case key_def:
             parse_decl();
@@ -321,8 +344,17 @@ Parser::parse_block_stmt(){
 // break ; | continue ;
 void
 Parser::parse_breaking_stmt(){
-    matchif(key_break);
-    matchif(key_continue);
+    Token token = peek();
+    assert(token.get_name() == token_keywords);
+    switch(token.get_key_attr()){
+        case key_break:
+        case key_continue:
+            accept();
+            break;
+        default:
+            throw std::runtime_error("Expected Breaking Statment");
+    }
+
     match(token_semicolon);
 }
 
@@ -397,7 +429,7 @@ void
 Parser::parse_obj_def(){
     switch(lookahead()){
         case key_def:
-            parse_val_def;
+            parse_val_def();
             return;
         case key_let:
             return parse_const_def();
@@ -446,7 +478,7 @@ Parser::parse_const_def(){
 void 
 Parser::parse_val_def(){
       assert(peek().get_name() == key_def);
-      accept;
+      accept();
       match(token_identifier);
       match(token_colon);
       parse_basic_type();
@@ -486,7 +518,7 @@ Parser::parse_parameter(){
 // declseq decl | decl
 void 
 Parser::parse_decl_seq(){
-    while(!token_que.empty()) parse_decl;
+    while(!token_que.empty()) parse_decl();
 }
 
 // declseq
@@ -498,7 +530,7 @@ Parser::parse_program(){
 // member functions
 token_name 
 Parser::lookahead(){
-    assert(!token_que.empty);
+    assert(!token_que.empty());
     return token_que.front().get_name();
 }
 
