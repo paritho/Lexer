@@ -18,6 +18,7 @@ enum token_name
     // single operators
     token_conditional_op,
     token_assignment_op,
+    token_unary_op,
 
     // operator groups
     token_relational_op,
@@ -26,6 +27,7 @@ enum token_name
     token_logical_op,
     token_type_specifier,
     token_keywords,
+    token_arrow,
 
     // identifier
     token_identifier,
@@ -75,6 +77,18 @@ enum logical_operators
     logop_AND,
     logop_OR,
     logop_NOT,
+};
+
+enum unary_operators
+{
+    uop_asterix,
+    uop_const,
+    uop_volatile,
+    uop_increment,
+    uop_decrement,
+    uop_bit_not,
+    uop_log_not,
+    uop_ref,
 };
 
 enum keywords
