@@ -25,6 +25,7 @@ union attribute
     attribute(arithmatic_operators op) : arthop(op) {}
     attribute(bitwise_operators op) : bitop(op) {}
     attribute(logical_operators op) :logop(op) {}
+    attribute(unary_operators op) :uop(op) {}
     attribute(type_specifier ts) : typespec(ts) {}
     attribute(integer_token inttok) : intval(inttok) {}
     attribute(double fp) : floatval(fp) {}
@@ -39,6 +40,7 @@ union attribute
     arithmatic_operators arthop;
     bitwise_operators bitop;
     logical_operators logop;
+    unary_operators uop;
     type_specifier typespec;
     integer_token intval;
     bool boolval;
@@ -61,6 +63,7 @@ struct Token
     Token(arithmatic_operators aop, Location loc={});
     Token(bitwise_operators bop, Location loc={});
     Token(logical_operators lop, Location loc={});
+    Token(unary_operators uop, Location loc={});
     Token(type_specifier ts, Location loc={});
     Token(radix rad, long long value, Location loc={});
     Token(char c, Location loc={});
@@ -77,6 +80,7 @@ struct Token
     std::string display(arithmatic_operators op);
     std::string display(bitwise_operators op);
     std::string display(logical_operators op);
+    std::string display(unary_operators op);
     std::string display(type_specifier type);
     std::string display(integer_token num);
     std::string display(char c);
@@ -101,6 +105,7 @@ struct Token
     arithmatic_operators get_arthop_attr() const;
     bitwise_operators get_bit_attr() const;
     logical_operators get_log_attr() const;
+    unary_operators get_unop_attr() const;
     type_specifier get_ts_attr() const;
     integer_token get_intval_attr() const;
     bool get_bool_attr() const;
@@ -133,6 +138,9 @@ Token::get_bit_attr() const {return attr.bitop;};
 
 inline logical_operators 
 Token::get_log_attr() const {return attr.logop;};
+
+inline unary_operators 
+Token::get_unop_attr() const {return attr.uop;};
 
 inline type_specifier 
 Token::get_ts_attr() const {return attr.typespec;};
