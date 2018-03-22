@@ -61,6 +61,12 @@ Token::Token(logical_operators lop, Location loc)
       location(loc)
 { }
 
+Token::Token(unary_operators uop, Location loc)
+    : name(token_unary_op),
+      attr(uop),
+      location(loc)
+{ }
+
 Token::Token(type_specifier ts, Location loc)
     : name(token_type_specifier),
       attr(ts),
@@ -245,6 +251,28 @@ display(logical_operators op){
             return "or";
         case logop_NOT:
             return "not";  
+    }
+}
+
+std::string
+display(unary_operators op){
+    switch(op){
+        case uop_asterix:
+            return "*";
+        case uop_const:
+            return "const";
+        case uop_volatile:
+            return "volatile";
+        case uop_increment:
+            return "+";
+        case uop_decrement:
+            return "-";
+        case uop_bit_not:
+            return "~";
+        case uop_log_not:
+            return "!";
+        case uop_ref:
+            return "&";
     }
 }
 
