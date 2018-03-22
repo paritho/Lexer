@@ -128,6 +128,7 @@ void
 Parser::parse_log_or_expr(){
     parse_log_and_expr();
 
+    // while(matchif_logicalOR()) parse_log_annd_expr();
     if(lookahead() == token_logical_op){
         parse_log_or_expr();
         Token token = peek();
