@@ -20,20 +20,28 @@ Parser::parse_type(){
 // | ( type list? ) -> type | type
 void 
 Parser::parse_basic_type(){
-    parse_type_list();
+    parse_type();
+
+    if(lookahead() == token_left_paren){
+        parse_type_list();
+        match(token_right_paren);
+        match(token_arrow);
+        parse_type();
+        return;
+    }
 
     Token token = peek();
-
-    assert( token.get_name() == type_specifier );
-
+    assert(token.get_name() == token_type_specifier);
     switch(token.get_ts_attr()){
         case ts_void:
         case ts_bool:
         case ts_int:
         case ts_float:
         case ts_char:
+            parse_type();
             return;
         default:
+            return;
     }
     return;
 }
@@ -50,7 +58,15 @@ Parser::parse_type_list(){
 void
 Parser::parse_postfix_type(){
     parse_basic_type();
-    
+
+    if(lookahead(2) == token_left_brace){
+        parse_postfix_type();
+        match(token_left_brace);
+        if(lookahead() != token_right_brace) parse_primary_expr();
+        match(token_right_brace);
+        return;
+    }
+    while(lookahead() == token_unary_op) parse_postfix_type();
 
 }
 
@@ -71,8 +87,9 @@ Parser::parse_expr(){
 void 
 Parser::parse_assign_expr(){
     parse_conditional_expr();
-
-    switch(lookahead()){
+    Token token = peek();
+    assert(token.get_name() == token_relational_op);
+    switch(token.get_relop_attr()){
         case op_equals:
             accept();
             parse_assign_expr();
@@ -110,7 +127,8 @@ Parser::parse_conditional_expr(){
 void 
 Parser::parse_log_or_expr(){
     parse_log_and_expr();
-    if(lookahead() == logop_OR){
+
+    if(lookahead() == token_logical_op){
         parse_log_or_expr();
         Token token = peek();
         assert(token.get_name() == token_logical_op);
@@ -123,7 +141,7 @@ Parser::parse_log_or_expr(){
 void 
 Parser::parse_log_and_expr(){
     parse_bit_or_expr();
-    if(lookahead() == logop_AND) {
+    if(lookahead() == token_logical_op) {
         parse_log_and_expr();
         Token token = peek();
         assert(token.get_name() == token_logical_op);
@@ -223,17 +241,7 @@ Parser::parse_cast_expr(){
 void 
 Parser::parse_unary_expr(){
     parse_postfix_expr();
-    switch(lookahead()){
-        case op_plus:
-        case op_minus:
-        case op_mult:
-        case op_not:
-        case op_and:
-            parse_unary_expr();
-        default:
-          break;
-    }
-   
+    while(matchif(token_unary_op)) parse_unary_expr();   
 }
 
 // postfix ( arg list ) | postfix [ arg list ] | prim expr
@@ -242,11 +250,13 @@ Parser::parse_postfix_expr(){
     parse_primary_expr();
     switch(lookahead()){
         case token_left_bracket:
+            parse_postfix_expr();
             match(token_left_bracket);
             parse_arg_list();
             match(token_right_bracket);
             return;
         case token_left_paren:
+            parse_postfix_expr();
             match(token_left_paren);
             parse_arg_list();
             match(token_right_paren);
@@ -308,29 +318,34 @@ Parser::parse_primary_expr(){
 // | decl | expr
 void 
 Parser::parse_stmt(){
-    switch(lookahead()){
-        case token_left_brace:
-            parse_block_stmt();
-            return;
-        case key_if:
-            parse_if_stmt();
-            return;
-        case key_while:
-            parse_while_stmt();
-            return;
-        case key_break:
-        case key_continue:
-            parse_breaking_stmt();
-            return;
-        case key_return:
-            parse_return_stmt();
-            return;
-        case key_def:
-            parse_decl();
-            return;
-        default:
-            parse_primary_expr();
+    Token token = peek();
+    if(token.get_name() == token_left_brace) return parse_block_stmt();
+    
+    // may need to switch on get_sym_attr().get();
+    if(token.get_name() == token_keywords){
+        switch(token.get_key_attr()){
+            case key_def:
+                parse_decl();
+                return;
+            case key_return:
+                parse_return_stmt();
+                return;
+            case key_continue:
+            case key_break:
+                parse_breaking_stmt();
+                return;
+            case key_while:
+                parse_while_stmt();
+                return;
+            case key_if:
+                parse_if_stmt();
+                return;
+            default:
+                throw std::runtime_error("Expected a keyword");
+        }
     }
+
+    parse_primary_expr();
 }
 
 // { stmtseq }
@@ -361,19 +376,20 @@ Parser::parse_breaking_stmt(){
 // if ( expr ) stmt | if ( expr ) stmt else stmt
 void 
 Parser::parse_if_stmt(){
-    assert(peek().get_name() == key_if);
+    assert(peek().get_name() == token_keywords);
     accept();
     match(token_left_paren);
     parse_primary_expr();
     match(token_right_paren);
     parse_stmt();
-    if(lookahead() == key_else) parse_stmt();
+    Token token = peek();
+    if(token.get_name() == token_keywords && token.get_key_attr() == key_else) parse_stmt();
 }
 
 // while ( expr ) stmt
 void 
 Parser::parse_while_stmt(){
-    assert(peek().get_name() == key_while);
+    assert(peek().get_name() == token_keywords);
     accept();
     match(token_left_paren);
     parse_primary_expr();
@@ -391,7 +407,7 @@ Parser::parse_stmtseq(){
 // return expr ; | return ;
 void 
 Parser::parse_return_stmt(){
-    assert(peek().get_name() == key_return);
+    assert(peek().get_name() == token_keywords);
     accept();
     if(lookahead() == token_semicolon) {
         match(token_semicolon);
@@ -405,10 +421,12 @@ Parser::parse_return_stmt(){
 void 
 Parser::parse_decl(){
     switch(lookahead()){
-        case key_def:
+        case key_def:{
             token_name name = lookahead(2);
             if(name == token_colon) return parse_local_decl();
             if(name == token_left_paren) return parse_func_def();
+            }
+            break;
         case key_let:
         case key_var:
             return parse_local_decl();
@@ -427,7 +445,10 @@ Parser::parse_local_decl(){
 // var def | const def | value def
 void 
 Parser::parse_obj_def(){
-    switch(lookahead()){
+    Token token = peek();
+    // this may not work. this may need to be token.get_sym_attr().get();
+    assert(token.get_name() == token_keywords);
+    switch(token.get_key_attr()){
         case key_def:
             parse_val_def();
             return;
@@ -443,7 +464,7 @@ Parser::parse_obj_def(){
 // var ident : type ; | var ident : type = expr
 void 
 Parser::parse_var_def(){
-    assert(peek().get_name() == key_var);
+    assert(peek().get_name() == token_keywords);
     accept();
     match(token_identifier);
     match(token_colon);
@@ -464,7 +485,7 @@ Parser::parse_var_def(){
 // let ident : type = expr ;
 void 
 Parser::parse_const_def(){
-    assert(peek().get_name() == key_let);
+    assert(peek().get_name() == token_keywords);
     accept();
     match(token_identifier);
     match(token_colon);
@@ -477,7 +498,7 @@ Parser::parse_const_def(){
 // def ident : type = expr ;
 void 
 Parser::parse_val_def(){
-      assert(peek().get_name() == key_def);
+      assert(peek().get_name() == token_keywords);
       accept();
       match(token_identifier);
       match(token_colon);
@@ -491,7 +512,7 @@ Parser::parse_val_def(){
 // def ident ( param list? ) -> type block stmt
 void 
 Parser::parse_func_def(){
-    assert(peek().get_name() == key_def);
+    assert(peek().get_name() == token_keywords);
     accept();
     match(token_identifier);
     match(token_left_paren);
@@ -551,7 +572,7 @@ Parser::match(token_name token){
 
     std::stringstream ss;
     Location loc = peek().get_loc();
-    ss << "Syntax error at: " << peek().display(loc);
+    ss << "Syntax error";
 }
 
 Token 
