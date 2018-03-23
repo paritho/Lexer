@@ -593,8 +593,8 @@ Token
 Parser::matchif_bit_or(){
     if(lookahead() == token_bitwise_op){
         Token token = peek();
-        switch(token.get_bit_attr(){
-            case bit_or:
+        switch(token.get_bit_attr()){
+            case op_or:
                 return accept();
             default:
                 throw std::runtime_error("Expected Bitwise Or");
@@ -607,7 +607,7 @@ Parser::matchif_bit_xor(){
     if(lookahead() == token_bitwise_op){
         Token token = peek();
         switch(token.get_bit_attr()){
-            case bit_xor:
+            case op_xor:
                 return accept();
             default:
                 throw std::runtime_error("Expected Bitwise  Xor");
@@ -620,7 +620,7 @@ Parser::matchif_bit_and(){
     if(lookahead() == token_bitwise_op){
         Token token = peek();
         switch(token.get_bit_attr()){
-            case bit_and:
+            case op_and:
                 return accept();
             default:
                 throw std::runtime_error("Expected Bitwise And");
