@@ -67,6 +67,11 @@ struct Parser{
     Token match(token_name token);
     Token matchif(token_name token);
     Token matchif_eq();
+    Token matchif_log_OR();
+    Token matchif_log_AND();
+    Token matchif_bit_or();
+    Token matchif_bit_xor();
+    Token matchif_bit_and();
     Token matchif_rel();
     Token matchif_shift();
     Token matchif_add();

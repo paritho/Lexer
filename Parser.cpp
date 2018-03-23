@@ -89,13 +89,10 @@ Parser::parse_assign_expr(){
     parse_conditional_expr();
     Token token = peek();
     assert(token.get_name() == token_relational_op);
-    switch(token.get_relop_attr()){
-        case op_equals:
-            accept();
-            parse_assign_expr();
-            return;
-        default:
-          break;
+    if(token.get_relop_attr() == op_equals){
+        accept();
+        parse_assign_expr();
+        return;
     }
   return;
 }
@@ -127,68 +124,36 @@ Parser::parse_conditional_expr(){
 void 
 Parser::parse_log_or_expr(){
     parse_log_and_expr();
-
-    // while(matchif_logicalOR()) parse_log_annd_expr();
-    if(lookahead() == token_logical_op){
-        parse_log_or_expr();
-        Token token = peek();
-        assert(token.get_name() == token_logical_op);
-        if(token.get_log_attr() == logop_OR) accept();
-        parse_log_and_expr();
-    }
+    while(matchif_log_OR()) parse_log_and_expr();
 }
 
 // log and expr AND bit or expr | bit or expr
 void 
 Parser::parse_log_and_expr(){
     parse_bit_or_expr();
-    if(lookahead() == token_logical_op) {
-        parse_log_and_expr();
-        Token token = peek();
-        assert(token.get_name() == token_logical_op);
-        if(token.get_log_attr() == logop_AND) accept();
-        parse_bit_or_expr();
-    }
-  return;
+    while(matchif_log_AND()) parse_bit_or_expr();
+     
 }
 
 // bit or expr OR xor expr | xor expr
 void 
 Parser::parse_bit_or_expr(){
     parse_bit_xor_expr();
-    if(lookahead() == token_bitwise_op){
-        parse_bit_or_expr();
-        Token token = peek();
-        assert(token.get_name() == token_bitwise_op);
-        if(token.get_bit_attr() == op_or) accept();
-        parse_bit_xor_expr();
-    }
+    while(matchif_bit_or()) parse_bit_xor_expr(); 
 }
 
 // bit xor expr ^ bit and expr | bit and expr
 void 
 Parser::parse_bit_xor_expr(){
     parse_bit_and_expr();
-    if(lookahead() == token_bitwise_op){
-        parse_bit_xor_expr();
-        Token token = peek();
-        assert(token.get_name() == token_bitwise_op);
-        if(token.get_bit_attr() == op_xor) accept();
-        parse_bit_and_expr();
-    }
+    while(matchif_bit_xor()) parse_bit_and_expr();
 }
 
 // bit and expr & rel expr | rel expr
 void 
 Parser::parse_bit_and_expr(){
     parse_relational_expr();
-    if(lookahead() == token_bitwise_op){
-        parse_bit_and_expr();
-        Token token = peek();
-        assert(token.get_name() == token_bitwise_op);
-        if(token.get_bit_attr() == op_and) accept();
-        parse_relational_expr();
-    }
+    while(matchif_bit_and()) parse_relational_expr();
 }
 
 // eq expr == rel expr | eq != rel | rel expr
@@ -593,6 +558,73 @@ Parser::matchif_eq(){
         default:
           return {};
       }
+    }
+    return {};
+}
+
+Token
+Parser::matchif_log_OR(){
+    if(lookahead() == token_logical_op){
+        Token token = peek();
+        switch(token.get_log_attr()){
+            case logop_OR:
+                return accept();
+            default:
+                throw std::runtime_error("Expected Logical Or");
+        }
+    }
+    return {};
+}
+
+Token
+Parser::matchif_log_AND(){
+    if(lookahead() == token_logical_op){
+        Token token = peek();
+        switch(token.get_log_attr()){
+            case logop_AND:
+                return accept();
+            default:
+                throw std::runtime_error("Expected Logical And");
+        }
+    }
+    return {};
+}
+Token
+Parser::matchif_bit_or(){
+    if(lookahead() == token_bitwise_op){
+        Token token = peek();
+        switch(token.get_bit_attr(){
+            case bit_or:
+                return accept();
+            default:
+                throw std::runtime_error("Expected Bitwise Or");
+        }
+    }
+    return {};
+}
+Token
+Parser::matchif_bit_xor(){
+    if(lookahead() == token_bitwise_op){
+        Token token = peek();
+        switch(token.get_bit_attr()){
+            case bit_xor:
+                return accept();
+            default:
+                throw std::runtime_error("Expected Bitwise  Xor");
+        }
+    }
+    return {};
+}
+Token
+Parser::matchif_bit_and(){
+    if(lookahead() == token_bitwise_op){
+        Token token = peek();
+        switch(token.get_bit_attr()){
+            case bit_and:
+                return accept();
+            default:
+                throw std::runtime_error("Expected Bitwise And");
+        }
     }
     return {};
 }
