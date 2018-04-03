@@ -23,6 +23,7 @@ struct Lexer
     const char peek() { return eof() ? 0 : *(current + 1); }
 
     Token lex_punctuator(token_name token);
+    Token lex_arrow_op();
     Token lex_relop(int len, relational_operators op);
     Token lex_arthop(arithmatic_operators op);
     Token lex_bitop(int len, bitwise_operators op);

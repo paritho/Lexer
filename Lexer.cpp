@@ -102,6 +102,7 @@ Lexer::scan(){
             case '+':
                 return lex_arthop(op_plus);
             case '-':
+                if(peek() == '>') return lex_arrow_op();
                 return lex_arthop(op_minus);
             case '*':
                 return lex_arthop(op_mult);
@@ -149,6 +150,12 @@ Token
 Lexer::lex_punctuator(token_name token){
     accept();
     return {token, token_location};
+}
+
+Token
+Lexer::lex_arrow_op(){
+    accept(2);
+    return {token_arrow, current_location};
 }
 
 Token
