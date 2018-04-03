@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Lexer.hpp"
+#include "AST.hpp"
 #include <deque>
 #include <string>
 
@@ -8,54 +9,58 @@ struct Parser{
     
     Parser(Symbol_table& syms, const std::string& source);
 
-    void parse_type();
-    void parse_basic_type();
-    void parse_type_list();
-    void parse_postfix_type();
-    void parse_ref_type();
+    Type* parse_type();
+    Type* parse_basic_type();
+    //different. fix
+    Type* parse_type_list();
+    Type* parse_postfix_type();
+    Type* parse_ref_type();
 
     // epxressions
-    void parse_expr();
-    void parse_assign_expr();
-    void parse_constant_expr();
-    void parse_conditional_expr();
-    void parse_log_or_expr();
-    void parse_log_and_expr();
-    void parse_bit_or_expr();
-    void parse_bit_and_expr();
-    void parse_bit_xor_expr();
-    void parse_equality_expr();
-    void parse_relational_expr();
-    void parse_shift_expr();
-    void parse_add_expr();
-    void parse_mult_expr();
-    void parse_cast_expr();
-    void parse_unary_expr();
-    void parse_postfix_expr();
-    void parse_arg_list();
-    void parse_argument();
-    void parse_primary_expr();
+    Expr* parse_expr();
+    Expr* parse_assign_expr();
+    Expr* parse_constant_expr();
+    Expr* parse_conditional_expr();
+    Expr* parse_log_or_expr();
+    Expr* parse_log_and_expr();
+    Expr* parse_bit_or_expr();
+    Expr* parse_bit_and_expr();
+    Expr* parse_bit_xor_expr();
+    Expr* parse_equality_expr();
+    Expr* parse_relational_expr();
+    Expr* parse_shift_expr();
+    Expr* parse_add_expr();
+    Expr* parse_mult_expr();
+    Expr* parse_cast_expr();
+    Expr* parse_unary_expr();
+    Expr* parse_postfix_expr();
+    //different. fix
+    Expr* parse_arg_list();
+    Expr* parse_argument();
+    Expr* parse_primary_expr();
 
     // stmts
-    void parse_stmt();
-    void parse_block_stmt();
-    void parse_breaking_stmt();
-    void parse_if_stmt();
-    void parse_while_stmt();
-    void parse_stmtseq();
-    void parse_return_stmt();
+    Stmt* parse_stmt();
+    Stmt* parse_block_stmt();
+    Stmt* parse_breaking_stmt();
+    Stmt* parse_if_stmt();
+    Stmt* parse_while_stmt();
+    Stmt* parse_stmtseq();
+    // differnt. fix
+    Stmt* parse_return_stmt();
 
     // declarations and definitions
-    void parse_decl();
-    void parse_local_decl();
-    void parse_obj_def();
-    void parse_var_def();
-    void parse_const_def();
-    void parse_val_def();
-    void parse_func_def();
-    void parse_param_list();
-    void parse_parameter();
-    void parse_decl_seq();
+    Decl* parse_decl();
+    Decl* parse_local_decl();
+    Decl* parse_obj_def();
+    Decl* parse_var_def();
+    Decl* parse_const_def();
+    Decl* parse_val_def();
+    Decl* parse_func_def();
+    Decl* parse_param_list();
+    Decl* parse_parameter();
+    //differnt. fix
+    Decl* parse_decl_seq();
 
     void parse_program();
 
