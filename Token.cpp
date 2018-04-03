@@ -114,6 +114,8 @@ Token::get_int_base(radix base){
 std::string
 display(token_name name){
     switch(name){
+        case token_arrow:
+            return "->";
         case token_left_brace:
             return "left brace";
         case token_right_brace:
