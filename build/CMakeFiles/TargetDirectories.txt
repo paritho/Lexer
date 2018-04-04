@@ -1,3 +1,0 @@
-/home/frodo/git/Lexer/build/CMakeFiles/rebuild_cache.dir
-/home/frodo/git/Lexer/build/CMakeFiles/mc.dir
-/home/frodo/git/Lexer/build/CMakeFiles/edit_cache.dir

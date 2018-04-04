@@ -11,10 +11,9 @@ struct Parser{
 
     Type* parse_type();
     Type* parse_basic_type();
-    //different. fix
-    Type* parse_type_list();
     Type* parse_postfix_type();
     Type* parse_ref_type();
+    Type_List parse_type_list();
 
     // epxressions
     Expr* parse_expr();
@@ -34,10 +33,9 @@ struct Parser{
     Expr* parse_cast_expr();
     Expr* parse_unary_expr();
     Expr* parse_postfix_expr();
-    //different. fix
-    Expr* parse_arg_list();
     Expr* parse_argument();
     Expr* parse_primary_expr();
+    Expr_List parse_arg_list();
 
     // stmts
     Stmt* parse_stmt();
@@ -46,8 +44,7 @@ struct Parser{
     Stmt* parse_if_stmt();
     Stmt* parse_while_stmt();
     Stmt* parse_stmtseq();
-    // differnt. fix
-    Stmt* parse_return_stmt();
+    Stmt_List parse_return_stmt();
 
     // declarations and definitions
     Decl* parse_decl();
@@ -59,8 +56,7 @@ struct Parser{
     Decl* parse_func_def();
     Decl* parse_param_list();
     Decl* parse_parameter();
-    //differnt. fix
-    Decl* parse_decl_seq();
+    Decl_List parse_decl_seq();
 
     void parse_program();
 
