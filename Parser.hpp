@@ -2,6 +2,7 @@
 
 #include "Lexer.hpp"
 #include "AST.hpp"
+#include "Semantics.hpp"
 #include <deque>
 #include <string>
 
@@ -85,6 +86,7 @@ struct Parser{
     // member vars
     Lexer lexer;
     std::deque<Token> token_que;
+    Semantics actions;
 
 };
 

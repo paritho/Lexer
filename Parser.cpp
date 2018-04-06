@@ -13,14 +13,14 @@ Parser::Parser(Symbol_table& syms, const std::string& source)
 // post type
 Type*
 Parser::parse_type(){
-  parse_postfix_type();
+  return parse_postfix_type();
 }
 
 // void | bool | int | float | char
 // | ( type list? ) -> type | type
 Type* 
 Parser::parse_basic_type(){
-    parse_type();
+    Type* t = parse_type();
 
     if(lookahead() == token_left_paren){
         parse_type_list();
@@ -47,7 +47,7 @@ Parser::parse_basic_type(){
 }
 
 // type-list , type | type
-Type* 
+Type_List
 Parser::parse_type_list(){
     parse_basic_type();
     while(lookahead() == token_semicolon) parse_basic_type(); 
@@ -79,18 +79,19 @@ Parser::parse_ref_type(){
 // assign expr
 Expr* 
 Parser::parse_expr(){
-    parse_assign_expr();
+   return parse_assign_expr();
 
 }
 
 // cond expr = assign expr | cond expr
 Expr*
 Parser::parse_assign_expr(){
-    parse_conditional_expr();
+    Expr* e = parse_conditional_expr();
     Token token = peek();
     assert(token.get_name() == token_relational_op);
     if(token.get_relop_attr() == op_equals){
         accept();
+        // semantics.on_assignment_expr
         parse_assign_expr();
         return;
     }
@@ -99,25 +100,26 @@ Parser::parse_assign_expr(){
 
 Expr*
 Parser::parse_constant_expr(){
-    parse_conditional_expr();
+    return parse_conditional_expr();
 }
 
 // log or expr ? expr : cond expr | log or expr
 Expr*
 Parser::parse_conditional_expr(){
-    parse_log_or_expr();
+    Expr* e = parse_log_or_expr();
 
     switch(lookahead()){
         case token_conditional_op:
             match(token_conditional_op);
-            parse_expr();
+            Expr* ex1 = parse_expr();
             match(token_colon);
-            parse_conditional_expr();
+            Expr* ex2 = parse_conditional_expr();
+            // return on_conditional_expr;
             return;
         default:
             break;
     }
-  return;
+  return e;
 }
 
 // log or expr or log and expr | log and expr
@@ -182,9 +184,13 @@ Parser::parse_shift_expr(){
 // | mult expr
 Expr*
 Parser::parse_add_expr(){
-    parse_mult_expr();
-    while(matchif_add()) parse_mult_expr();
+    Expr* e1 = parse_mult_expr();
+    while(Token token = matchif_add()){
+        Expr* e2 = parse_mult_expr();
+        e1 = actions.on_add_expr(token, e1, e2);
+    }
 
+    return e1;
 }
 
 // mult expr * cast expr | mult / cast | mult % cast
@@ -234,7 +240,7 @@ Parser::parse_postfix_expr(){
 }
 
 // arg list, arg | arg
-Expr* 
+Expr_List
 Parser::parse_arg_list(){
     parse_argument();
     while(matchif(token_comma)) parse_argument();
@@ -263,8 +269,7 @@ Parser::parse_primary_expr(){
 
       // identifiers
       case token_identifier:
-          accept();
-          return;
+          return actions.on_id_expr(accept());
 
       case token_left_paren:
           match(token_left_paren);
@@ -371,7 +376,7 @@ Parser::parse_stmtseq(){
 }
 
 // return expr ; | return ;
-Stmt* 
+Stmt_List
 Parser::parse_return_stmt(){
     assert(peek().get_name() == token_keywords);
     accept();
@@ -503,7 +508,7 @@ Parser::parse_parameter(){
 }
 
 // declseq decl | decl
-Decl* 
+Decl_List
 Parser::parse_decl_seq(){
     while(!token_que.empty()) parse_decl();
 }
