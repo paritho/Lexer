@@ -8,4 +8,5 @@ add_executable(mc main.cpp
                   Decl.cpp
                   Stmt.cpp
                   Type.cpp
-                  Semantics.cpp)
+                  Semantics.cpp
+                  Scope.cpp)

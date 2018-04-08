@@ -22,6 +22,8 @@ Type*
 Parser::parse_basic_type(){
     Type* t = parse_type();
 
+    // should this be first? is it correct?
+    // TODO: finish this section
     if(lookahead() == token_left_paren){
         parse_type_list();
         match(token_right_paren);
@@ -34,40 +36,62 @@ Parser::parse_basic_type(){
     assert(token.get_name() == token_type_specifier);
     switch(token.get_ts_attr()){
         case ts_void:
+            return actions.on_void_type(accept());
         case ts_bool:
+            return actions.on_bool_type(accept());
         case ts_int:
+            return actions.on_int_type(accept());
         case ts_float:
+            return actions.on_fp_type(accept());
         case ts_char:
-            parse_type();
-            return;
+            return actions.on_char_type(accept());
         default:
-            return;
+            break;
     }
-    return;
+    
+    return t;
 }
 
 // type-list , type | type
 Type_List
 Parser::parse_type_list(){
-    parse_basic_type();
-    while(lookahead() == token_semicolon) parse_basic_type(); 
+    Type* t1 = parse_basic_type();
+    while(Token token = matchif(token_comma)){
+        Type* t2 = parse_type();
+        e1 = actions.on_parse_type_list(token, t1, t2);
+    }
+    return t1;
 }
 
 // post * | post const | post volatile | post [ expr ]
 // | post [] | basic type
 Type*
 Parser::parse_postfix_type(){
-    parse_basic_type();
+    Type* t = parse_basic_type();
 
     if(lookahead(2) == token_left_brace){
-        parse_postfix_type();
+        t = parse_postfix_type();
         match(token_left_brace);
-        if(lookahead() != token_right_brace) parse_primary_expr();
+        if(lookahead() != token_right_brace){
+            Expr* e = parse_primary_expr();
+        } 
         match(token_right_brace);
-        return;
+        return actions.on_post_type_expr(t, e);
     }
-    while(lookahead() == token_unary_op) parse_postfix_type();
 
+    // need an assert here??
+    switch(peek.get_sym_attr()){
+        case "*":
+            return actions.on_ast_type(accept());
+        case "const":
+            return actions.on_const_type(accept());
+        case "volatile":
+            return actions.on_volatile_type(accept());
+        default:
+            throw std::runtime_error("Expected a postfix type");
+    }
+
+    return t;
 }
 
 // ref type & | post type
@@ -88,14 +112,13 @@ Expr*
 Parser::parse_assign_expr(){
     Expr* e = parse_conditional_expr();
     Token token = peek();
-    assert(token.get_name() == token_relational_op);
-    if(token.get_relop_attr() == op_equals){
-        accept();
-        // semantics.on_assignment_expr
-        parse_assign_expr();
-        return;
+
+    if(token.get_name() == token_assignment_op){
+        e = parse_assign_expr();
+        return actions.on_assign_expr(token, e);
     }
-  return;
+
+  return e;
 }
 
 Expr*
@@ -107,77 +130,106 @@ Parser::parse_constant_expr(){
 Expr*
 Parser::parse_conditional_expr(){
     Expr* e = parse_log_or_expr();
+    Token token = peek();
 
-    switch(lookahead()){
-        case token_conditional_op:
-            match(token_conditional_op);
-            Expr* ex1 = parse_expr();
-            match(token_colon);
-            Expr* ex2 = parse_conditional_expr();
-            // return on_conditional_expr;
-            return;
-        default:
-            break;
+    if(token.get_name() == token_conditional_op){
+        Token t = match(token_conditional_op);
+        Expr* e1 = parse_expr();
+        match(token_colon);
+        Expr* e2 = parse_conditional_expr();
+        return actions.on_conditional_expr(t, e1, e2);
     }
+
   return e;
 }
 
 // log or expr or log and expr | log and expr
 Expr* 
 Parser::parse_log_or_expr(){
-    parse_log_and_expr();
-    while(matchif_log_OR()) parse_log_and_expr();
+    Expr* e1 = parse_log_and_expr();
+    while(Token token = matchif_log_OR()) {
+        Expr* e2 = parse_log_and_expr();
+        e1 = actions.on_log_or_expr(token, e1, e2);
+    }
+    return e1;
 }
 
 // log and expr AND bit or expr | bit or expr
 Expr*
 Parser::parse_log_and_expr(){
-    parse_bit_or_expr();
-    while(matchif_log_AND()) parse_bit_or_expr();
-     
+    Expr* e1 = parse_bit_or_expr();
+    while(Token token = matchif_log_AND()) {
+        Expr* e2 = parse_bit_or_expr();
+        e1 = actions.on_log_and_expr(token, e1, e2);
+    } 
+    return e1;
 }
 
 // bit or expr OR xor expr | xor expr
 Expr*
 Parser::parse_bit_or_expr(){
-    parse_bit_xor_expr();
-    while(matchif_bit_or()) parse_bit_xor_expr(); 
+    Expr* e1 = parse_bit_xor_expr();
+    while(Token token = matchif_bit_or()) {
+        Expr* e2 = parse_bit_xor_expr(); 
+        e1 = actions.on_bin_or_expr(token, e1, e2);
+    } 
+    return e1;
 }
 
 // bit xor expr ^ bit and expr | bit and expr
 Expr*
 Parser::parse_bit_xor_expr(){
-    parse_bit_and_expr();
-    while(matchif_bit_xor()) parse_bit_and_expr();
+    Expr* e1 = parse_bit_and_expr();
+    while(Token token = matchif_bit_xor()){
+        Expr* e2 = parse_bit_and_expr();
+        e1 = actions.on_bin_xor_expr(token, e1, e2);
+    }
+    return e1;
 }
 
 // bit and expr & rel expr | rel expr
 Expr*
 Parser::parse_bit_and_expr(){
-    parse_relational_expr();
-    while(matchif_bit_and()) parse_relational_expr();
+    Expr* e1 = parse_relational_expr();
+    while(Token token = matchif_bit_and()) {
+        Expr* e2 = parse_relational_expr();
+        e1 = actions.on_bin_and_expr(token, e1, e2);
+    }
+    return e1;
 }
 
 // eq expr == rel expr | eq != rel | rel expr
 Expr*
 Parser::parse_equality_expr(){
-    parse_relational_expr();
-    while(matchif_eq()) parse_relational_expr();
+    Expr* e1 = parse_relational_expr();
+    while(Token token = matchif_eq()) {
+        Expr* e2 = parse_relational_expr();
+        e1 = actions.on_eq_expr(token, e1, e2);
+    }
+    return e1;
 }
 
 // rel expr < shift | rel > shift | rel <= shift
 // | rel >= shift | shift epxr
 Expr*
 Parser::parse_relational_expr(){
-    parse_shift_expr();
-    while(matchif_rel()) parse_shift_expr();
+    Expr* e1 = parse_shift_expr();
+    while(Token token = matchif_rel()) {
+        Exper* e2 = parse_shift_expr();
+        e1 = actions.on_rel_expr(token, e1, e2);    
+    }
+    return e1;
 }
 
 // shift expr << add expr | shift >> add | add expr
 Expr*
 Parser::parse_shift_expr(){
-    parse_add_expr();
-    while(matchif_shift()) parse_add_expr();
+    Expr* e1 = parse_add_expr();
+    while(Token token = matchif_shift()) {
+        Expr* e2 = parse_add_expr();
+        e1 = actions.on_shift_expr(token, e1, e2);
+    } 
+    return e1;
 }
 
 // add expr + mult expr | add expr - mult expr
@@ -197,14 +249,20 @@ Parser::parse_add_expr(){
 // | cast
 Expr*
 Parser::parse_mult_expr(){
-    parse_cast_expr();
-    while(matchif_mult()) parse_cast_expr();
+    Expr* e1 = parse_cast_expr();
+    while(Token token = matchif_mult()) {
+        Expr* e2 = parse_cast_expr();
+        e1 = actions.on_mult_expr(token, e1, e2);
+    }
+    return e1;
 }
 
 // cast expr as type | unexpr
 Expr*
 Parser::parse_cast_expr(){
-    parse_unary_expr();
+    Expr* e = parse_unary_expr();
+    //TODO: Fix
+    return e;
 
 }
 
@@ -212,43 +270,56 @@ Parser::parse_cast_expr(){
 // & unexpr | * unexpr | postfix expr
 Expr* 
 Parser::parse_unary_expr(){
-    parse_postfix_expr();
-    while(matchif(token_unary_op)) parse_unary_expr();   
+    Expr* e1 = parse_postfix_expr();
+    while(Token token = matchif(token_unary_op)){
+        Expr* e2 = parse_unary_expr();   
+        e1 = actions.on_unary_expr(token, e2);
+    } 
+    return e1;
 }
 
 // postfix ( arg list ) | postfix [ arg list ] | prim expr
 Expr*
 Parser::parse_postfix_expr(){
-    parse_primary_expr();
+    Expr* e1 = parse_primary_expr();
     switch(lookahead()){
-        case token_left_bracket:
-            parse_postfix_expr();
+        case token_left_bracket:{
+            Expr* e2 = parse_postfix_expr();
             match(token_left_bracket);
-            parse_arg_list();
+            Expr* e3 = parse_arg_list();
             match(token_right_bracket);
-            return;
+            e1 = actions.on_post_expr(e2, e3);
+            break;
+        }
         case token_left_paren:
-            parse_postfix_expr();
+            Expr* e2 = parse_postfix_expr();
             match(token_left_paren);
-            parse_arg_list();
+            Expr* e3 = parse_arg_list();
             match(token_right_paren);
-            return;
+            e1 = actions.on_post_expr(e2, e3);
+            break;
+        }
         default:
             break;
     }
-    return;
+
+    return e1;
 }
 
 // arg list, arg | arg
 Expr_List
 Parser::parse_arg_list(){
-    parse_argument();
-    while(matchif(token_comma)) parse_argument();
+    Expr* e1 = parse_argument();
+    while(Token token = matchif(token_comma)){
+        Expr* e2 = parse_argument();
+        e1 = actions.on_parse_arg_list(token, e1, e2);
+    }
+    return e1;
 }
 
 Expr*
 Parser::parse_argument(){
-    parse_primary_expr();
+    return parse_primary_expr();
 }
 
 // literal | id | ( expr )
@@ -258,14 +329,19 @@ Parser::parse_primary_expr(){
     switch(lookahead()){
       // literals
       case token_binary_int:
+            return actions.on_bin_int(accept());
       case token_decimal_int:
+            return actions.on_dec_itn(accept());
       case token_floating_point_literal:
-      case token_boolean_literal:
+            return actions.on_fp_int(accept());
       case token_hex_int:
+            return actions.on_hex_int(accept());
+      case token_boolean_literal:
+            return actions.on_bool_lit(accept());
       case token_character_literal:
+            return actions.on_char_lit(accept());
       case token_string_literal:
-          accept();
-          return;
+            return actions.on_string_lit(accept());
 
       // identifiers
       case token_identifier:
@@ -273,9 +349,9 @@ Parser::parse_primary_expr(){
 
       case token_left_paren:
           match(token_left_paren);
-          parse_expr();
+          Expr* e = parse_expr();
           match(token_right_paren);
-          return;
+          return e;
       default:
           break; 
     }
