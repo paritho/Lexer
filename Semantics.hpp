@@ -2,10 +2,14 @@
 
 #include "AST.hpp"
 #include "Token.hpp"
+#include "Scope.hpp"
 
 struct Semantics {
 
-    Semantics();
+    Semantics()
+        : scope(nullptr)
+    {}
+
     ~Semantics() = default;
 
     Type* on_void_type(Token t);
@@ -67,5 +71,35 @@ struct Semantics {
     Decl* on_parse_params();
     Decl_List on_parse_param_list();
 
+    void declare(Decl* d){
+        Scope* s = get_current_scope();
+        // if the symbol was already declared, throw error
+        if(s->lookup_name(d->get_name()){
+            std::stringstream ss;
+            ss << "Redeclaration of " << d->get_name();
+            throw std::runtime_error(ss.str());
+        }    
+        // otherwise, add symbol to the table
+        s->declare(d->get_name());
+    }
+
+    // handling scope
+    void enter_new_scope(){
+        scope = new Global_Scope();
+    }
+
+    void leave_current_scope(){
+        Scope* current = scope;
+        scope = current->get_enclosing_scope();
+    }
+
+    Scope* get_current_scope() { return scope; }
+
+    Scope* get_enclosing_scope(){ 
+        return scope->get_enclosing_scope();
+    }
+
+    private:
+    Scope* scope;
 
 }

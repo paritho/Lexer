@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "Type.hpp"
 
 using Expr_List = std::vector<Expr*>;
 
@@ -28,21 +29,24 @@ enum kind {
 };
 
 struct Expr {
-    Expr(kind k)
-        :kind(k)
+    Expr(kind k, Type t)
+        : kind(k),
+         type(t)
     {}
 
     virtual ~Expr() = default;
 
     kind get_kind() const { return kind; }
+    Type* get_type() { return &type; }
 
     private:
     kind kind;
+    Type type;
 };
 
 struct Int_Expr : Expr {
     Int_Expr(int n)
-        : Expr(int_kind), val(n)
+        : Expr(int_kind, new Int_Type()), val(n)
     {}
 
     int val;
@@ -50,7 +54,7 @@ struct Int_Expr : Expr {
 
 struct Bool_Expr : Expr {
     Bool_Expr(bool b)
-        : Expr(bool_kind), val(b)
+        : Expr(bool_kind, new Bool_Type()), val(b)
     {}
 
     bool val;
@@ -58,7 +62,7 @@ struct Bool_Expr : Expr {
 
 struct Float_Expr : Expr {
     Float_Expr(double n)
-        : Expr(float_kind), val(n)
+        : Expr(float_kind, new Foat_Type()), val(n)
     {}
 
     double val;
@@ -66,7 +70,7 @@ struct Float_Expr : Expr {
 
 struct Char_Expr : Expr {
     Char_Expr(char c)
-        : Expr(char_kind), val(c)
+        : Expr(char_kind, new Char_Type()), val(c)
     {}
 
     char val;
@@ -74,7 +78,7 @@ struct Char_Expr : Expr {
 
 struct Id_Expr : Expr {
     Id_Expr(symbol s)
-        : Expr(id_kind), val(s)
+        : Expr(id_kind, new Id_Type()), val(s)
     {}
 
     symbol val;
@@ -82,7 +86,7 @@ struct Id_Expr : Expr {
 
 struct String_Expr : Expr {
     String_Expr(std::string s)
-        : Expr(string_kind), val(s)
+        : Expr(string_kind, new Char_Type()), val(s)
     {}
 
     std::string val;
@@ -90,7 +94,7 @@ struct String_Expr : Expr {
 
 struct Ptr_Expr : Expr {
     Ptr_Expr(int& n)
-        : Expr(ptr_kind), val(n)
+        : Expr(ptr_kind, new Int_Type()), val(n)
     {}
 
     int& val;
@@ -98,7 +102,7 @@ struct Ptr_Expr : Expr {
 
 struct Ref_Expr : Expr {
     Ref_Expr(int& n)
-        : Expr(ref_kind), val(n)
+        : Expr(ref_kind, new Ref_Type()), val(n)
     {}
 
     int& val;
@@ -109,7 +113,7 @@ struct Ref_Expr : Expr {
 template <typename T>
 struct Bin_Expr : Expr {
     Bin_Expr(kind k, T op, Expr* e1, Expr* e2)
-        : Expr(k),
+        : Expr(k, new Arith_Type()),
           op(op),
           e1(e1),
           e2(e2)
