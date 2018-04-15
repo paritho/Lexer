@@ -11,6 +11,8 @@ class Symbol_table
     public:
     symbol get(const char* str);
     symbol get(const std::string& str);
+    symbol find(const char* str);
+    symbol find(const std::string& str);
 
     private:
     std::unordered_set<std::string> symbols;
@@ -27,3 +29,14 @@ Symbol_table::get(const std::string& str){
     return &*symbols.insert(str).first;
 }
 
+inline symbol
+Symbol_table::find(const char* str){
+    auto iter = symbols.find(str);
+    return (iter == symbols.end()) ? nullptr : &*iter;
+}
+
+inline symbol
+Symbol_table::find(const std::string& str){
+    auto iter = symbols.find(str);
+    return (iter == symbols.end()) ? nullptr : &*iter;
+}

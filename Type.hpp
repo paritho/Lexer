@@ -13,6 +13,7 @@ enum type_name{
     type_char,
     type_ref,
     type_post,
+    type_func,
 
     // note: there will be no operations on these types:
     id_type, 
@@ -79,6 +80,6 @@ struct Post_Type : Type {
 
 struct Func_Type : Type {
     Func_Type()
-        : Type()
+        : Type(type_func)
     {}
 };

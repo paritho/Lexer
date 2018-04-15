@@ -20,16 +20,16 @@ Parser::parse_type(){
 // | ( type list? ) -> type | type
 Type* 
 Parser::parse_basic_type(){
-    Type* t = parse_type();
+    Type* t1 = parse_type();
 
     // should this be first? is it correct?
     // TODO: finish this section
     if(lookahead() == token_left_paren){
-        parse_type_list();
+        Type_List tl = parse_type_list();
         match(token_right_paren);
         match(token_arrow);
-        parse_type();
-        return;
+        Type* t2 = parse_type();
+        return actions.on_function_type(t1, tl, t2);
     }
 
     Token token = peek();
@@ -49,18 +49,27 @@ Parser::parse_basic_type(){
             break;
     }
     
-    return t;
+    return t1;
 }
 
 // type-list , type | type
 Type_List
 Parser::parse_type_list(){
     Type* t1 = parse_basic_type();
+    Type_List tl;
+
     while(Token token = matchif(token_comma)){
         Type* t2 = parse_type();
-        e1 = actions.on_parse_type_list(token, t1, t2);
+        tl = actions.on_type_list(token, tl, t1, t2);
     }
-    return t1;
+
+    if(tl.size() > 0) return tl;
+    
+    // if there's only 1 type in the typelist, push it on
+    // to the vector so we can still return a Type_List
+    tl.push_back(t1);
+
+    return tl;
 }
 
 // post * | post const | post volatile | post [ expr ]
@@ -80,7 +89,8 @@ Parser::parse_postfix_type(){
     }
 
     // need an assert here??
-    switch(peek.get_sym_attr()){
+    Token token = peek();
+    switch(token.get_sym_attr()){
         case "*":
             return actions.on_ast_type(accept());
         case "const":
@@ -97,7 +107,14 @@ Parser::parse_postfix_type(){
 // ref type & | post type
 Type* 
 Parser::parse_ref_type(){
+    Type* t1 = parse_postfix_type();
+    
+    // not sure how to do this if & can be ref or
+    // bitwise op, when whitespace doesn't matter
+    if(lookahead() == token_reference) 
+        return actions.on_ref_type(accept());
 
+    return t1;
 }
 
 // assign expr
@@ -215,7 +232,7 @@ Expr*
 Parser::parse_relational_expr(){
     Expr* e1 = parse_shift_expr();
     while(Token token = matchif_rel()) {
-        Exper* e2 = parse_shift_expr();
+        Expr* e2 = parse_shift_expr();
         e1 = actions.on_rel_expr(token, e1, e2);    
     }
     return e1;
@@ -286,18 +303,16 @@ Parser::parse_postfix_expr(){
         case token_left_bracket:{
             Expr* e2 = parse_postfix_expr();
             match(token_left_bracket);
-            Expr* e3 = parse_arg_list();
+            Expr_List el = parse_arg_list();
             match(token_right_bracket);
-            e1 = actions.on_post_expr(e2, e3);
-            break;
+            return actions.on_post_expr(e1, el, e2);
         }
-        case token_left_paren:
+        case token_left_paren: {
             Expr* e2 = parse_postfix_expr();
             match(token_left_paren);
-            Expr* e3 = parse_arg_list();
+            Expr_List el = parse_arg_list();
             match(token_right_paren);
-            e1 = actions.on_post_expr(e2, e3);
-            break;
+            return actions.on_post_expr(e1, el, e2);
         }
         default:
             break;
@@ -310,11 +325,18 @@ Parser::parse_postfix_expr(){
 Expr_List
 Parser::parse_arg_list(){
     Expr* e1 = parse_argument();
+    Expr_List el;
+
     while(Token token = matchif(token_comma)){
         Expr* e2 = parse_argument();
-        e1 = actions.on_parse_arg_list(token, e1, e2);
+        el = actions.on_arg_list(token, el, e1, e2);
     }
-    return e1;
+
+    if(el.size() > 0 ) return el;
+
+    el.push_back(e1);
+
+    return el;
 }
 
 Expr*
@@ -331,7 +353,7 @@ Parser::parse_primary_expr(){
       case token_binary_int:
             return actions.on_bin_int(accept());
       case token_decimal_int:
-            return actions.on_dec_itn(accept());
+            return actions.on_dec_int(accept());
       case token_floating_point_literal:
             return actions.on_fp_int(accept());
       case token_hex_int:

@@ -22,8 +22,9 @@ struct Semantics {
     Type* on_const_type(Token t);
     Type* on_volatile_type(Token t);
     Type* on_parse_postfix_type();
-    Type* on_parse_ref_type();
-    Type_List on_parse_type_list(Token t, Type* t1, Type* t2);
+    Type* on_ref_type(Token t);
+    Type* on_function_type(Type* t1, Type_List tl, Type* t2);
+    Type_List on_type_list(Token t, Type_List tl, Type* t1, Type* t2);
 
     Expr* on_id_expr(Token t);
     Expr* on_bin_int(Token t);
@@ -48,9 +49,10 @@ struct Semantics {
     Expr* on_shift_expr(Token t, Expr* e1, Expr * e2);
     Expr* on_cast_expr();
     Expr* on_unary_expr(Token t, Expr* e1);
-    Expr* on_post_expr(Token t, Expr* e1);
+    Expr* on_post_expr(Expr* e1, Expr_List el, Expr* e2);
     Expr* on_parse_args();
-    Expr_list on_parse_arg_list();
+    // NOTE: check for existance of e1
+    Expr_List on_arg_list(Token t, Expr_List el, Expr* e1, Expr* e2);
 
     Stmt* on_parse_stmt();
     Stmt* on_enter_block_stmt();

@@ -29,7 +29,7 @@ enum kind {
 };
 
 struct Expr {
-    Expr(kind k, Type t)
+    Expr(kind k, Type* t)
         : kind(k),
          type(t)
     {}
@@ -37,11 +37,11 @@ struct Expr {
     virtual ~Expr() = default;
 
     kind get_kind() const { return kind; }
-    Type* get_type() { return &type; }
+    Type* get_type() { return type; }
 
     private:
     kind kind;
-    Type type;
+    Type* type;
 };
 
 struct Int_Expr : Expr {
@@ -62,7 +62,7 @@ struct Bool_Expr : Expr {
 
 struct Float_Expr : Expr {
     Float_Expr(double n)
-        : Expr(float_kind, new Foat_Type()), val(n)
+        : Expr(float_kind, new Float_Type()), val(n)
     {}
 
     double val;

@@ -28,6 +28,7 @@ enum token_name
     token_type_specifier,
     token_keywords,
     token_arrow,
+    token_reference,
 
     // identifier
     token_identifier,

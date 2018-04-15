@@ -12,13 +12,12 @@ struct Scope {
 
     virtual ~Scope() = default;
 
-    Decl* lookup_name(const char* str) const {
-        auto iter = symbols.get(str)
-        // TODO: fix. iter->second returns a token
-        return iter == end() ? nullptr : iter->second();
+    symbol lookup_name(const char* str) const {
+        return symbols.find(str);
     }
 
     void declare(const char* str){
+        // .get will insert the symbol
         symbols.get(str);
     }
 
@@ -26,7 +25,7 @@ struct Scope {
 
     private:
     Scope* enclosing;
-    Symbol_table symbols;
+    Symbol_table& symbols;
 
 };
 
