@@ -46,7 +46,7 @@ struct While_Stmt : Stmt {
 
 // for break; continue; and return;
 struct Breaking_Stmt : Stmt {
-    Breaking_Stmt(){};
+    Breaking_Stmt(){}
         : Stmt()
     {}
 };

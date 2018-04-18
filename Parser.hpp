@@ -55,8 +55,8 @@ struct Parser{
     Decl* parse_const_def();
     Decl* parse_val_def();
     Decl* parse_func_def();
-    Decl* parse_param_list();
     Decl* parse_parameter();
+    Decl_List parse_param_list();
     Decl_List parse_decl_seq();
 
     void parse_program();

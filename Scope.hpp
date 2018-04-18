@@ -30,13 +30,19 @@ struct Scope {
 };
 
 struct Global_Scope : Scope {
-    using Scope::Scope;
+    Global_Scope(Symbol_table& syms, Scope* enc = nullptr)
+        : Scope(syms, enc)
+    {}
 };
 
 struct Block_Scope : Scope {
-    using Scope::Scope;
+    Block_Scope(Symbol_table& syms, Scope* enc = nullptr)
+        : Scope(syms, enc)
+    {}
 };
 
 struct Param_Scope : Scope {
-    using Scope::Scope;
+    Param_Scope(Symbol_table& syms, Scope* enc = nullptr)
+        : Scope(syms, enc)
+    {}
 };

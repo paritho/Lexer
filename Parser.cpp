@@ -502,13 +502,12 @@ Parser::parse_decl(){
         default:
             throw std::runtime_error("Declaration Expected");
     }
-  return;
 }
 
 // obj def
 Decl* 
 Parser::parse_local_decl(){
-    parse_obj_def();
+    return parse_obj_def();
 }
 
 // var def | const def | value def
@@ -519,8 +518,7 @@ Parser::parse_obj_def(){
     assert(token.get_name() == token_keywords);
     switch(token.get_key_attr()){
         case key_def:
-            parse_val_def();
-            return;
+            return parse_val_def();
         case key_let:
             return parse_const_def();
         case key_var:
@@ -535,20 +533,24 @@ Decl*
 Parser::parse_var_def(){
     assert(peek().get_name() == token_keywords);
     accept();
-    match(token_identifier);
+    Token token = match(token_identifier);
     match(token_colon);
-    parse_basic_type();
+    Type* t = parse_basic_type();
+
+    Decl* d = actions.on_var_decl(token, t);
+    Expr* e;
+
     switch(lookahead()){
         case token_semicolon:
             accept();
-            return;
+            return d;
         default:
             match(token_assignment_op);
-            parse_primary_expr();
+            e = parse_primary_expr();
             match(token_semicolon);
             break;
     }
-  return;
+  return actions.on_var_def(token, t, e);
 }
 
 // let ident : type = expr ;
@@ -556,12 +558,15 @@ Decl*
 Parser::parse_const_def(){
     assert(peek().get_name() == token_keywords);
     accept();
-    match(token_identifier);
+    Token token = match(token_identifier);
     match(token_colon);
-    parse_basic_type();
+    Type* t = parse_basic_type();
+    actions.on_const_def(token, t);
     match(token_assignment_op);
-    parse_primary_expr();
+    Expr* e = parse_primary_expr();
     match(token_semicolon);
+
+    return actions.on_const_decl(token, t, e);
 }
 
 // def ident : type = expr ;
@@ -569,13 +574,15 @@ Decl*
 Parser::parse_val_def(){
       assert(peek().get_name() == token_keywords);
       accept();
-      match(token_identifier);
+      Token token = match(token_identifier);
       match(token_colon);
-      parse_basic_type();
+      Type* t = parse_basic_type();
+      actions.on_obj_decl(token, t);
       match(token_assignment_op);
-      parse_primary_expr();
+      Expr* e = parse_primary_expr();
       match(token_semicolon);
 
+      return actions.on_obj_def(token, t, e);
 }
 
 // def ident ( param list? ) -> type block stmt
@@ -583,32 +590,54 @@ Decl*
 Parser::parse_func_def(){
     assert(peek().get_name() == token_keywords);
     accept();
-    match(token_identifier);
+    Token token = match(token_identifier);
     match(token_left_paren);
-    parse_param_list();
+    actions.enter_param_scope();
+    Decl_List dl = parse_param_list();
     match(token_right_paren);
-    parse_block_stmt();
+    match(token_arrow);
+    Type* t = parse_basic_type();
+    
+    t = actions.construct_function_type(dl, t);
+    actions.on_function_decl(token, dl, t);
+    Stmt* stmt = parse_block_stmt();
+    return actions.on_function_def(token, dl, stmt, t);
 }
 
 // param list, param | param
-Decl*
+Decl_List
 Parser::parse_param_list(){
-    parse_parameter();
-    while(match(token_comma)) parse_parameter();
+    Decl* d1 = parse_parameter();
+    Decl_List dl;
+
+    while(Token token = match(token_comma)){
+        Decl* d2 = parse_parameter();
+        dl = actions.on_parse_param_list(token, dl, d2);
+    }
+
+    if(dl.size() > 0) return dl;
+
+    dl.pop_back(d1);
+    return dl;
 }
 
 // ident : type
 Decl*
 Parser::parse_parameter(){
-    matchif(token_identifier);
+    Token token = matchif(token_identifier);
     match(token_colon);
-    parse_basic_type();
+    Type* t = parse_basic_type();
+    actions.on_parse_param(token, t)
 }
 
 // declseq decl | decl
 Decl_List
 Parser::parse_decl_seq(){
-    while(!token_que.empty()) parse_decl();
+    Decl_List dl;
+    while(!token_que.empty()) {
+        dl.push_back(parse_decl());
+    }
+    return dl;
 }
 
 // declseq

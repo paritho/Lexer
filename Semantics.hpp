@@ -24,6 +24,7 @@ struct Semantics {
     Type* on_parse_postfix_type();
     Type* on_ref_type(Token t);
     Type* on_function_type(Type* t1, Type_List tl, Type* t2);
+    Type* construct_function_type(Decl_List dl, Type* t);
     Type_List on_type_list(Token t, Type_List tl, Type* t1, Type* t2);
 
     Expr* on_id_expr(Token t);
@@ -63,15 +64,17 @@ struct Semantics {
     Stmt* on_return_stmt();
     Stmt* on_breaking_stmt();
 
-    Decl* on_obj_decl();
-    Decl* on_obj_def();
-    Decl* on_var_decl();
-    Decl* on_var_def();
-    Decl* on_function_decl();
-    Decl* on_function_def();
-    Decl* on_const_def();
-    Decl* on_parse_params();
-    Decl_List on_parse_param_list();
+    // Declarations. Name lookup happens inside the _def function
+    Decl* on_obj_decl(Token token, Type* t);
+    Decl* on_obj_def(Token token, Type* t, Expr* e);
+    Decl* on_var_decl(Token token, Type* t);
+    Decl* on_var_def(Token token, Type* t, Expr* e);
+    Decl* on_function_decl(Token token, Decl_List dl, Type* t);
+    Decl* on_function_def(Token token, Decl_List dl, Stmt* stmt, Type* t);
+    Decl* on_const_def(Token token, Type* t);
+    Decl* on_const_decl(Token token, Type* t, Expr* e);
+    Decl* on_parse_param(Token token, Type* t);
+    Decl_List on_parse_param_list(Token token, Decl_List dl, Decl* d);
 
     void declare(Decl* d){
         Scope* s = get_current_scope();
@@ -88,6 +91,10 @@ struct Semantics {
     // handling scope
     void enter_new_scope(){
         scope = new Global_Scope();
+    }
+
+    void enter_param_scope(){
+
     }
 
     void leave_current_scope(){
