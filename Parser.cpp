@@ -81,8 +81,9 @@ Parser::parse_postfix_type(){
     if(lookahead(2) == token_left_brace){
         t = parse_postfix_type();
         match(token_left_brace);
+        Expr* e;
         if(lookahead() != token_right_brace){
-            Expr* e = parse_primary_expr();
+            e = parse_primary_expr();
         } 
         match(token_right_brace);
         return actions.on_post_type_expr(t, e);
@@ -617,7 +618,7 @@ Parser::parse_param_list(){
 
     if(dl.size() > 0) return dl;
 
-    dl.pop_back(d1);
+    dl.push_back(d1);
     return dl;
 }
 
@@ -627,7 +628,7 @@ Parser::parse_parameter(){
     Token token = matchif(token_identifier);
     match(token_colon);
     Type* t = parse_basic_type();
-    actions.on_parse_param(token, t)
+    return actions.on_parse_param(token, t);
 }
 
 // declseq decl | decl

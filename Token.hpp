@@ -14,6 +14,8 @@
 struct integer_token {
     radix rad;
     long long value;
+
+    long long get_value() { return value; }
 };
 
 union attribute

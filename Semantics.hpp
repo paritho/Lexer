@@ -30,8 +30,8 @@ struct Semantics {
     Expr* on_id_expr(Token t);
     Expr* on_bin_int(Token t);
     Expr* on_dec_int(Token t);
-    Expr* on_fp_int(Token t);
     Expr* on_hex_int(Token t);
+    Expr* on_fp_int(Token t);
     Expr* on_bool_lit(Token t);
     Expr* on_char_lit(Token t);
     Expr* on_string_lit(Token t);
@@ -51,7 +51,6 @@ struct Semantics {
     Expr* on_cast_expr();
     Expr* on_unary_expr(Token t, Expr* e1);
     Expr* on_post_expr(Expr* e1, Expr_List el, Expr* e2);
-    Expr* on_parse_args();
     // NOTE: check for existance of e1
     Expr_List on_arg_list(Token t, Expr_List el, Expr* e1, Expr* e2);
 
@@ -79,7 +78,7 @@ struct Semantics {
     void declare(Decl* d){
         Scope* s = get_current_scope();
         // if the symbol was already declared, throw error
-        if(s->lookup_name(d->get_name()){
+        if(s->lookup_name(d->get_name())){
             std::stringstream ss;
             ss << "Redeclaration of " << d->get_name();
             throw std::runtime_error(ss.str());

@@ -11,8 +11,10 @@ enum type_name{
     type_int,
     type_float,
     type_char,
+    type_string,
     type_ref,
     type_post,
+    type_unary,
     type_func,
 
     // note: there will be no operations on these types:
@@ -51,6 +53,11 @@ struct Char_Type : Type {
         : Type(type_char)
     {}
 };
+struct String_Type : Type {
+    String_Type()
+        : Type(type_string)
+    {}
+};
 struct Id_Type : Type {
     Id_Type()
         : Type(id_type)
@@ -75,6 +82,12 @@ struct Arith_Type : Type {
 struct Post_Type : Type {
     Post_Type()
         : Type(type_post)
+    {}
+};
+
+struct Unary_Type : Type {
+    Unary_Type()
+        : Type(type_unary)
     {}
 };
 

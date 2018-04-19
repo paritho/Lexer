@@ -45,11 +45,11 @@ struct Expr {
 };
 
 struct Int_Expr : Expr {
-    Int_Expr(int n)
+    Int_Expr(long long n)
         : Expr(int_kind, new Int_Type()), val(n)
     {}
 
-    int val;
+    long long val;
 };
 
 struct Bool_Expr : Expr {
@@ -85,11 +85,11 @@ struct Id_Expr : Expr {
 };
 
 struct String_Expr : Expr {
-    String_Expr(std::string s)
-        : Expr(string_kind, new Char_Type()), val(s)
+    String_Expr(symbol s)
+        : Expr(string_kind, new String_Type()), val(s)
     {}
 
-    std::string val;
+    symbol val;
 };
 
 struct Ptr_Expr : Expr {
@@ -138,3 +138,34 @@ struct Log_Expr : Bin_Expr<logical_operators> {
 
 };
 
+struct Unary_Expr : Expr {
+    Unary_Expr(kind k, Expr* expr)
+        : Expr(k, new Unary_Type()),
+          e(expr)
+    {}
+
+    unary_kind uk;
+    Expr* e;
+};
+
+struct Postfix_Expr : Expr {
+    Postfix_Expr(kind k, Expr* expr, const Expr_List& args)
+        : Expr(k, new Post_Type()),
+          base(expr),
+          args(args)
+    { }
+
+    Expr* base;
+    std::vector<Expr*> args;
+};
+
+struct Call_Expr : Postfix_Expr {
+    Call_Expr(Expr* expr, const Expr_List& args)
+        : Postfix_Expr(call_kind, expr, args),
+          e(expr),
+          args(args);
+    {}
+    
+    Expr* e;
+    std::vector<Expr*> args;
+}
