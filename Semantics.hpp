@@ -10,17 +10,13 @@ struct Semantics {
         : scope(nullptr)
     {}
 
-    ~Semantics() = default;
+    ~Semantics(){
+        assert(!scope);
+    };
 
-    Types* on_void_type(Token t);
-    Types* on_bool_type(Token t);
-    Types* on_int_type(Token t);
-    Types* on_fp_type(Token t);
-    Types* on_char_type(Token t);
+    Types* on_basic_type(Token t);
     Types* on_post_type_expr(Token t, Expr* e);
     Types* on_ast_type(Token t);
-    Types* on_const_type(Token t);
-    Types* on_volatile_type(Token t);
     Types* on_parse_postfix_type();
     Types* on_ref_type(Token t);
     Types* on_function_type(Types* t1, Type_List tl, Types* t2);
@@ -36,7 +32,7 @@ struct Semantics {
     Expr* on_char_lit(Token t);
     Expr* on_string_lit(Token t);
     Expr* on_add_expr(Token t, Expr* e1, Expr* e2);
-    Expr* on_assign_expr(Token t, Expr* e);
+    Expr* on_assign_expr(Expr* e1, Expr* e2);
     Expr* on_conditional_expr(Token t, Expr* e1, Expr * e2);
     Expr* on_mult_expr(Token t, Expr* e1, Expr * e2);
     Expr* on_bin_and_expr(Token t, Expr* e1, Expr * e2);
@@ -48,20 +44,22 @@ struct Semantics {
     Expr* on_rel_expr(Token t, Expr* e1, Expr * e2);
     Expr* on_eq_expr(Token t, Expr* e1, Expr * e2);
     Expr* on_shift_expr(Token t, Expr* e1, Expr * e2);
-    Expr* on_cast_expr();
+    Expr* on_cast_expr(Expr* e, Types* t);
+    Expr* on_call_expr(Expr* e, Expr_List& args);
+    Expr* on_index_expr(Expr* e, Expr_List& args);
     Expr* on_unary_expr(Token t, Expr* e1);
     Expr* on_post_expr(Expr* e1, Expr_List el, Expr* e2);
-    // NOTE: check for existance of e1
-    Expr_List on_arg_list(Token t, Expr_List el, Expr* e1, Expr* e2);
 
-    Stmt* on_parse_stmt();
-    Stmt* on_enter_block_stmt();
-    Stmt* on_leave_block_stmt();
     Stmt* on_if_stmt();
     Stmt* on_if_else_stmt();
     Stmt* on_while_stmt();
     Stmt* on_return_stmt();
     Stmt* on_breaking_stmt();
+    Stmt* on_decl_stmt();
+    Stmt* on_expr_stmt();
+    Stmt* on_block_stmt(Stmt_List& sl);
+    void enter_block();
+    void leave_block();
 
     // Declarations. Name lookup happens inside the _def function
     Decl* on_obj_decl(Token token, Types* t);
@@ -72,8 +70,8 @@ struct Semantics {
     Decl* on_function_def(Token token, Decl_List dl, Stmt* stmt, Types* t);
     Decl* on_const_def(Token token, Types* t);
     Decl* on_const_decl(Token token, Types* t, Expr* e);
-    Decl* on_parse_param(Token token, Types* t);
-    Decl_List on_parse_param_list(Token token, Decl_List dl, Decl* d);
+    Decl* on_param_decl(Token token, Types* t);
+    Decl* on_program(Decl_List& dl);
 
     void declare(Decl* d){
         Scope* s = get_current_scope();
@@ -87,15 +85,24 @@ struct Semantics {
         s->declare(d->get_name());
     }
 
+    Decl* lookup(symbol name);
+
+    // handling type converstions
+    Expr* conv_tval(Expr* e);
+    Expr* conv_tbool(Expr* e);
+    Expr* conv_tint(Expr* e);
+    Expr* conv_tfp(Expr* e);
+    Expr* conv_tchar(Expr* e);
+    Expr* conv_ttype(Expr* e, Types* t);
+
+    // asserting functions
+    Expr* require_reference(Expr* e);
+    Expr* requre_value(Expr* e);
+    bool require_same(Types* t1, Types* t2)
+
     // handling scope
-    void enter_new_scope(){
-        scope = new Global_Scope();
-    }
-
-    void enter_param_scope(){
-
-    }
-
+    void enter_global_scope();
+    void enter_param_scope();
     void leave_current_scope(){
         Scope* current = scope;
         scope = current->get_enclosing_scope();

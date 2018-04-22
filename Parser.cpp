@@ -34,19 +34,7 @@ Parser::parse_basic_type(){
 
     Token token = peek();
     assert(token.get_name() == token_type_specifier);
-    switch(token.get_ts_attr()){
-        case ts_void:
-            return actions.on_void_type(accept());
-        case ts_bool:
-            return actions.on_bool_type(accept());
-        case ts_int:
-            return actions.on_int_type(accept());
-        case ts_float:
-            return actions.on_fp_type(accept());
-        case ts_char:
-            return actions.on_char_type(accept());
-        default:
-            break;
+    return actions.on_basic_type(accept());
     }
     
     return t1;
@@ -72,7 +60,7 @@ Parser::parse_type_list(){
     return tl;
 }
 
-// post * | post const | post volatile | post [ expr ]
+// post * | post [ expr ]
 // | post [] | basic type
 Type*
 Parser::parse_postfix_type(){
@@ -91,15 +79,8 @@ Parser::parse_postfix_type(){
 
     // need an assert here??
     Token token = peek();
-    switch(token.get_sym_attr()){
-        case "*":
-            return actions.on_ast_type(accept());
-        case "const":
-            return actions.on_const_type(accept());
-        case "volatile":
-            return actions.on_volatile_type(accept());
-        default:
-            throw std::runtime_error("Expected a postfix type");
+    if(token.get_sym_attr() == "*"){
+        return actions.on_ast_type(accept());
     }
 
     return t;
@@ -128,12 +109,12 @@ Parser::parse_expr(){
 // cond expr = assign expr | cond expr
 Expr*
 Parser::parse_assign_expr(){
-    Expr* e = parse_conditional_expr();
-    Token token = peek();
+    Expr* e1 = parse_conditional_expr();
+    Token token = accept();
 
     if(token.get_name() == token_assignment_op){
-        e = parse_assign_expr();
-        return actions.on_assign_expr(token, e);
+        Expr* e2 = parse_assign_expr();
+        return actions.on_assign_expr(e1, e2);
     }
 
   return e;
@@ -148,14 +129,14 @@ Parser::parse_constant_expr(){
 Expr*
 Parser::parse_conditional_expr(){
     Expr* e = parse_log_or_expr();
-    Token token = peek();
+    Token token = accept();
 
     if(token.get_name() == token_conditional_op){
         Token t = match(token_conditional_op);
         Expr* e1 = parse_expr();
         match(token_colon);
         Expr* e2 = parse_conditional_expr();
-        return actions.on_conditional_expr(t, e1, e2);
+        return actions.on_conditional_expr(e e1, e2);
     }
 
   return e;

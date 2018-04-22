@@ -2,29 +2,22 @@
 #include "Semantics.hpp"
 #include "AST.hpp"
 
+// for basic types, we only need to accept the token
+// we don't need to do anything with it (right now)
 Types*
-Semantics::on_void_type(Token t){
-
-}
-
-Types*
-Semantics::on_bool_type(Token t){
-
-}
-
-Types*
-Semantics::on_int_type(Token t){
-
-}
-
-Types*
-Semantics::on_fp_type(Token t){
-
-}
-
-Types*
-Semantics::on_char_type(Token t){
-
+Semantics::on_basic_type(Token t){
+    switch(t.get_ts_attr()){
+        case ts_void:
+            return new Void_Type();
+        case ts_bool:
+            return new Bool_Type();
+        case ts_int:
+            return new Int_Type();
+        case ts_float:
+            return new Float_Type();
+        case ts_char:
+            return new Char_Type();
+    }
 }
 
 Types*
@@ -34,16 +27,6 @@ Semantics::on_post_type_expr(Token t, Expr* e){
 
 Types*
 Semantics::on_ast_type(Token t){
-
-}
-
-Types*
-Semantics::on_const_type(Token t){
-
-}
-
-Types*
-Semantics::on_volatile_type(Token t){
 
 }
 
@@ -150,8 +133,15 @@ Semantics::on_add_expr(Token t, Expr* e1, Expr* e2){
 }
 
 Expr*
-Semantics::on_assign_expr(Token t, Expr* e){
+Semantics::on_assign_expr(Expr* e, Expr* e2){
+    e1 = require_reference(e1);
+    e2 = require_value(e2);
 
+    Types* t1 = e1->get_obj_type();
+    Types* t2 = e2->get_name();
+    requre_same(t1, t2);
+
+    return new Assign_Expr(e1->get_name(), e1, e2);
 }
 
 Expr*
