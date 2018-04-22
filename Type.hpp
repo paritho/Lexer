@@ -2,7 +2,7 @@
 
 #include <vector>
 
-using Type_List = std::vector<Type*>;
+using Type_List = std::vector<Types*>;
 
 
 enum type_name{
@@ -22,77 +22,77 @@ enum type_name{
     arith_type
 };
 
-struct Type {
-    Type(type_name tn)
+struct Types {
+    Types(type_name tn)
         : name(tn)
     {}
 
-    virtual ~Type() = default;
+    virtual ~Types() = default;
 
     private:
     type_name name;
 };
 
-struct Int_Type : Type {
+struct Int_Type : Types {
     Int_Type()
-        : Type(type_int)
+        : Types(type_int)
     {}
 };
-struct Bool_Type : Type {
+struct Bool_Type : Types {
     Bool_Type()
-        : Type(type_bool)
+        : Types(type_bool)
     {}
 };
-struct Float_Type : Type {
+struct Float_Type : Types {
     Float_Type()
-        : Type(type_float)
+        : Types(type_float)
     {}
 };
-struct Char_Type : Type {
+struct Char_Type : Types {
     Char_Type()
-        : Type(type_char)
+        : Types(type_char)
     {}
 };
-struct String_Type : Type {
+struct String_Type : Types {
     String_Type()
-        : Type(type_string)
+        : Types(type_string)
     {}
 };
-struct Id_Type : Type {
+struct Id_Type : Types {
     Id_Type()
-        : Type(id_type)
+        : Types(id_type)
     {}
 };
-struct Ptr_Type : Type {
+struct Ptr_Type : Types {
     Ptr_Type()
-        : Type(type_int)
+        : Types(type_int)
     {}
 };
-struct Ref_Type : Type {
+struct Ref_Type : Types {
     Ref_Type()
-        : Type(type_ref)
+        : Types(type_ref)
     {}
 };
-struct Arith_Type : Type {
+struct Arith_Type : Types {
     Arith_Type()
-        : Type(arith_type)
+        : Types(arith_type)
     {}
 };
 
-struct Post_Type : Type {
+struct Post_Type : Types {
     Post_Type()
-        : Type(type_post)
+        : Types(type_post)
     {}
 };
 
-struct Unary_Type : Type {
+struct Unary_Type : Types {
     Unary_Type()
-        : Type(type_unary)
+        : Types(type_unary)
     {}
 };
 
-struct Func_Type : Type {
+struct Func_Type : Types {
     Func_Type()
-        : Type(type_func)
+        : Types(type_func)
     {}
 };

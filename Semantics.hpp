@@ -12,20 +12,20 @@ struct Semantics {
 
     ~Semantics() = default;
 
-    Type* on_void_type(Token t);
-    Type* on_bool_type(Token t);
-    Type* on_int_type(Token t);
-    Type* on_fp_type(Token t);
-    Type* on_char_type(Token t);
-    Type* on_post_type_expr(Token t, Expr* e);
-    Type* on_ast_type(Token t);
-    Type* on_const_type(Token t);
-    Type* on_volatile_type(Token t);
-    Type* on_parse_postfix_type();
-    Type* on_ref_type(Token t);
-    Type* on_function_type(Type* t1, Type_List tl, Type* t2);
-    Type* construct_function_type(Decl_List dl, Type* t);
-    Type_List on_type_list(Token t, Type_List tl, Type* t1, Type* t2);
+    Types* on_void_type(Token t);
+    Types* on_bool_type(Token t);
+    Types* on_int_type(Token t);
+    Types* on_fp_type(Token t);
+    Types* on_char_type(Token t);
+    Types* on_post_type_expr(Token t, Expr* e);
+    Types* on_ast_type(Token t);
+    Types* on_const_type(Token t);
+    Types* on_volatile_type(Token t);
+    Types* on_parse_postfix_type();
+    Types* on_ref_type(Token t);
+    Types* on_function_type(Types* t1, Type_List tl, Types* t2);
+    Types* construct_function_type(Decl_List dl, Types* t);
+    Type_List on_type_list(Token t, Type_List tl, Types* t1, Types* t2);
 
     Expr* on_id_expr(Token t);
     Expr* on_bin_int(Token t);
@@ -64,15 +64,15 @@ struct Semantics {
     Stmt* on_breaking_stmt();
 
     // Declarations. Name lookup happens inside the _def function
-    Decl* on_obj_decl(Token token, Type* t);
-    Decl* on_obj_def(Token token, Type* t, Expr* e);
-    Decl* on_var_decl(Token token, Type* t);
-    Decl* on_var_def(Token token, Type* t, Expr* e);
-    Decl* on_function_decl(Token token, Decl_List dl, Type* t);
-    Decl* on_function_def(Token token, Decl_List dl, Stmt* stmt, Type* t);
-    Decl* on_const_def(Token token, Type* t);
-    Decl* on_const_decl(Token token, Type* t, Expr* e);
-    Decl* on_parse_param(Token token, Type* t);
+    Decl* on_obj_decl(Token token, Types* t);
+    Decl* on_obj_def(Token token, Types* t, Expr* e);
+    Decl* on_var_decl(Token token, Types* t);
+    Decl* on_var_def(Token token, Types* t, Expr* e);
+    Decl* on_function_decl(Token token, Decl_List dl, Types* t);
+    Decl* on_function_def(Token token, Decl_List dl, Stmt* stmt, Types* t);
+    Decl* on_const_def(Token token, Types* t);
+    Decl* on_const_decl(Token token, Types* t, Expr* e);
+    Decl* on_parse_param(Token token, Types* t);
     Decl_List on_parse_param_list(Token token, Decl_List dl, Decl* d);
 
     void declare(Decl* d){

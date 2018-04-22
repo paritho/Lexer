@@ -6,11 +6,13 @@
 using Expr_List = std::vector<Expr*>;
 
 enum kind {
+    converstion,
     int_kind,
     bool_kind,
     float_kind,
     char_kind,
     id_kind,
+    index_kind,
     string_kind,
     ptr_kind,
     ref_kind,
@@ -28,25 +30,67 @@ enum kind {
     const_kind,
 };
 
+enum unop {
+    pos,
+    neg,
+    not,
+    address,
+    dereference
+};
+
+enum binop{
+    add,
+    sub,
+    mul,
+    mod,
+    rem,
+    and,
+    or,
+    xor,
+    lshft,
+    rshft,
+    logadd,
+    logor,
+    equal,
+    noteq,
+    gteq,
+    lteq,
+    gt,
+    lt
+};
+
+enum conv_kind{
+    // if no converstion ie, entity
+    none,
+    value,
+    ctrunc,
+    // convert to ...
+    ctbool,
+    ctchar,
+    ctint,
+    ctfloat,
+};
+
 struct Expr {
-    Expr(kind k, Type* t)
+    Expr(kind k, Types* t)
         : kind(k),
-         type(t)
+          type(t)
     {}
 
     virtual ~Expr() = default;
 
     kind get_kind() const { return kind; }
-    Type* get_type() { return type; }
+    Types* get_type() { return type; }
 
     private:
     kind kind;
-    Type* type;
+    Types* type;
 };
 
 struct Int_Expr : Expr {
     Int_Expr(long long n)
-        : Expr(int_kind, new Int_Type()), val(n)
+        : Expr(int_kind, new Int_Type()), 
+          val(n)
     {}
 
     long long val;
@@ -54,7 +98,8 @@ struct Int_Expr : Expr {
 
 struct Bool_Expr : Expr {
     Bool_Expr(bool b)
-        : Expr(bool_kind, new Bool_Type()), val(b)
+        : Expr(bool_kind, new Bool_Type()), 
+          val(b)
     {}
 
     bool val;
@@ -62,7 +107,8 @@ struct Bool_Expr : Expr {
 
 struct Float_Expr : Expr {
     Float_Expr(double n)
-        : Expr(float_kind, new Float_Type()), val(n)
+        : Expr(float_kind, new Float_Type()), 
+          val(n)
     {}
 
     double val;
@@ -77,11 +123,12 @@ struct Char_Expr : Expr {
 };
 
 struct Id_Expr : Expr {
-    Id_Expr(symbol s)
-        : Expr(id_kind, new Id_Type()), val(s)
+    Id_Expr(Decl* d)
+        : Expr(id_kind, new Id_Type()), 
+          val(d)
     {}
 
-    symbol val;
+    Decl* val;
 };
 
 struct String_Expr : Expr {
@@ -106,6 +153,52 @@ struct Ref_Expr : Expr {
     {}
 
     int& val;
+};
+
+struct Cast_Expr : Expr {
+    Cast_Expr(Expr* e, Types* t)
+        : Expr(cast_kind, t),
+          src(e),
+          dest(t)
+    {}
+
+    Expr* src;
+    Types* dest;
+};
+
+struct Assign_Expr : Expr {
+    Assign_Expr(Types* t, Expr* lhs, Expr* rhs)
+        : Expr(ass_kind, t),
+          lhs(lhs),
+          rhs(rhs)
+    {}
+
+    Expr* lhs;
+    Expr* rhs;
+};
+
+struct Conditional_Expr : Expr {
+    Conditional_Expr(Expr* test, Expr* tbranch, Expr* fbranch)
+        : Expr(cond_kind, nullptr),
+          test(test),
+          tbranch(tbranch),
+          fbranch(fbranch)
+    {}
+
+    Expr* test;
+    Expr* tbranch;
+    Expr* fbranch;
+};
+
+struct Converstion_Expr : Expr {
+    Converstion_Expr(Expr* src, conv_kind ck)
+        : Expr(converstion, nullptr),
+          src(src),
+          dest(ck)
+    {}
+
+    Expr* src;
+    conv_kind dest;
 };
 
 // template for any expr that takes two operands
@@ -139,33 +232,34 @@ struct Log_Expr : Bin_Expr<logical_operators> {
 };
 
 struct Unary_Expr : Expr {
-    Unary_Expr(kind k, Expr* expr)
-        : Expr(k, new Unary_Type()),
+    Unary_Expr(unop op, Expr* expr)
+        : Expr(unary_kind, new Unary_Type()),
           e(expr)
     {}
 
-    unary_kind uk;
+    unop unop;
     Expr* e;
 };
 
 struct Postfix_Expr : Expr {
-    Postfix_Expr(kind k, Expr* expr, const Expr_List& args)
+    Postfix_Expr(kind k, Expr* expr, Expr_List& args)
         : Expr(k, new Post_Type()),
           base(expr),
           args(args)
     { }
 
     Expr* base;
-    std::vector<Expr*> args;
+    Expr_List args;
 };
 
 struct Call_Expr : Postfix_Expr {
-    Call_Expr(Expr* expr, const Expr_List& args)
-        : Postfix_Expr(call_kind, expr, args),
-          e(expr),
-          args(args);
+    Call_Expr(Expr* expr, Expr_List& args)
+        : Postfix_Expr(call_kind, expr, args)
     {}
-    
-    Expr* e;
-    std::vector<Expr*> args;
-}
+};
+
+struct Index_Expr : Postfix_Expr {
+    Index_Expr(Expr* expr, Expr_List& args)
+        : Postfix_Expr(index_kind, expr, args)
+    {}
+};

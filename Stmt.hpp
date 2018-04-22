@@ -5,10 +5,19 @@
 
 using Stmt_List = std::vector<Stmt*>;
 
+enum stmt_kind {
+    block_kind,
+    if_kind,
+    if_else_kind,
+    while_kind,
+    break_kind,
+    decl_kind,
+    expr_kind,
+};
 
 struct Stmt {
     Stmt(){};
-    virtual ~Stmt() = default;
+    virtual ~Stmt() = default;  
 
     private:
     Scope scope;

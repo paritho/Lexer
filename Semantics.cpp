@@ -2,73 +2,73 @@
 #include "Semantics.hpp"
 #include "AST.hpp"
 
-Type*
+Types*
 Semantics::on_void_type(Token t){
 
 }
 
-Type*
+Types*
 Semantics::on_bool_type(Token t){
 
 }
 
-Type*
+Types*
 Semantics::on_int_type(Token t){
 
 }
 
-Type*
+Types*
 Semantics::on_fp_type(Token t){
 
 }
 
-Type*
+Types*
 Semantics::on_char_type(Token t){
 
 }
 
-Type*
+Types*
 Semantics::on_post_type_expr(Token t, Expr* e){
 
 }
 
-Type*
+Types*
 Semantics::on_ast_type(Token t){
 
 }
 
-Type*
+Types*
 Semantics::on_const_type(Token t){
 
 }
 
-Type*
+Types*
 Semantics::on_volatile_type(Token t){
 
 }
 
-Type*
+Types*
 Semantics::on_parse_postfix_type(){
 
 }
 
-Type*
+Types*
 Semantics::on_ref_type(Token t){
 
 }
 
-Type*
-Semantics::on_function_type(Type* t1, Type_List tl, Type* t2){
+Types*
+Semantics::on_function_type(Types* t1, Type_List tl, Types* t2){
 
 }
 
-Type*
-Semantics::construct_function_type(Decl_List dl, Type* t){
+Types*
+Semantics::construct_function_type(Decl_List dl, Types* t){
 
 }
 
 Type_List
-Semantics::on_type_list(Token t, Type_List tl, Type* t1, Type* t2){
+Semantics::on_type_list(Token t, Type_List tl, Types* t1, Types* t2){
 
 }
 
@@ -279,47 +279,47 @@ Semantics::on_breaking_stmt(){
 
 //Name lookup happens inside the _def function
 Decl*
-Semantics::on_obj_decl(Token token, Type* t){
+Semantics::on_obj_decl(Token token, Types* t){
 
 }
 
 Decl*
-Semantics::on_obj_def(Token token, Type* t, Expr* e){
+Semantics::on_obj_def(Token token, Types* t, Expr* e){
 
 }
 
 Decl*
-Semantics::on_var_decl(Token token, Type* t){
+Semantics::on_var_decl(Token token, Types* t){
 
 }
 
 Decl*
-Semantics::on_var_def(Token token, Type* t, Expr* e){
+Semantics::on_var_def(Token token, Types* t, Expr* e){
 
 }
 
 Decl*
-Semantics::on_function_decl(Token token, Decl_List dl, Type* t){
+Semantics::on_function_decl(Token token, Decl_List dl, Types* t){
 
 }
 
 Decl*
-Semantics::on_function_def(Token token, Decl_List dl, Stmt* stmt, Type* t){
+Semantics::on_function_def(Token token, Decl_List dl, Stmt* stmt, Types* t){
 
 }
 
 Decl*
-Semantics::on_const_def(Token token, Type* t){
+Semantics::on_const_def(Token token, Types* t){
 
 }
 
 Decl*
-Semantics::on_const_decl(Token token, Type* t, Expr* e){
+Semantics::on_const_decl(Token token, Types* t, Expr* e){
 
 }
 
 Decl*
-Semantics::on_parse_param(Token token, Type* t){
+Semantics::on_parse_param(Token token, Types* t){
 
 }
 
