@@ -6,7 +6,7 @@
 using Expr_List = std::vector<Expr*>;
 
 enum kind {
-    converstion,
+    conversion,
     int_kind,
     bool_kind,
     float_kind,
@@ -18,6 +18,7 @@ enum kind {
     ref_kind,
     arith_kind,
     post_kind,
+    func_kind,
     arg_kind,
     unary_kind,
     cast_kind,
@@ -39,28 +40,28 @@ enum unop {
 };
 
 enum binop{
-    add,
-    sub,
-    mul,
-    mod,
-    rem,
-    and,
-    or,
-    xor,
-    lshft,
-    rshft,
-    logadd,
-    logor,
-    equal,
-    noteq,
-    gteq,
-    lteq,
-    gt,
-    lt
+    add_op,
+    sub_op,
+    mul_op,
+    mod_op,
+    rem_op,
+    bin_and_op,
+    bin_or_op,
+    bin_xor_op,
+    lshft_op,
+    rshft_op,
+    log_add_op,
+    log_or_op,
+    equal_op,
+    noteq_op,
+    gteq_op,
+    lteq_op,
+    gt_op,
+    lt_op
 };
 
 enum conv_kind{
-    // if no converstion ie, entity
+    // if no conversion ie, entity
     none,
     value,
     ctrunc,
@@ -72,7 +73,7 @@ enum conv_kind{
 };
 
 struct Expr {
-    Expr(kind k, Types* t)
+    Expr(kind k, Type* t)
         : kind(k),
           type(t)
     {}
@@ -80,11 +81,11 @@ struct Expr {
     virtual ~Expr() = default;
 
     kind get_kind() const { return kind; }
-    Types* get_type() { return type; }
+    Type* get_type() { return type; }
 
     private:
     kind kind;
-    Types* type;
+    Type* type;
 };
 
 struct Int_Expr : Expr {
@@ -156,18 +157,18 @@ struct Ref_Expr : Expr {
 };
 
 struct Cast_Expr : Expr {
-    Cast_Expr(Expr* e, Types* t)
+    Cast_Expr(Expr* e, Type* t)
         : Expr(cast_kind, t),
           src(e),
           dest(t)
     {}
 
     Expr* src;
-    Types* dest;
+    Type* dest;
 };
 
 struct Assign_Expr : Expr {
-    Assign_Expr(Types* t, Expr* lhs, Expr* rhs)
+    Assign_Expr(Type* t, Expr* lhs, Expr* rhs)
         : Expr(ass_kind, t),
           lhs(lhs),
           rhs(rhs)
@@ -190,45 +191,46 @@ struct Conditional_Expr : Expr {
     Expr* fbranch;
 };
 
-struct Converstion_Expr : Expr {
-    Converstion_Expr(Expr* src, conv_kind ck)
-        : Expr(converstion, nullptr),
+struct Conversion_Expr : Expr {
+    Conversion_Expr(Expr* src, conv_kind ck, Type* t)
+        : Expr(conversion, nullptr),
           src(src),
-          dest(ck)
+          kind(ck),
+          dest(t)
     {}
 
+    Type* get_dest() { return dest; }
+    Expr* get_src() { return src; }
+
     Expr* src;
-    conv_kind dest;
+    conv_kind kind;
+    Type* dest;
 };
 
-// template for any expr that takes two operands
-// add, mult, bin, log
-template <typename T>
+// add, mult, bin, log, eq, rel, shift
 struct Bin_Expr : Expr {
-    Bin_Expr(kind k, T op, Expr* e1, Expr* e2)
+    Bin_Expr(kind k, binop op, Expr* e1, Expr* e2)
         : Expr(k, new Arith_Type()),
           op(op),
           e1(e1),
           e2(e2)
     {}
 
-    T op;
+    binop op;
     Expr* e1;
     Expr* e2;
 };
 
-struct Arith_Expr : Bin_Expr<arithmatic_operators> {
-    Arith_Expr(arithmatic_operators t, Expr* e1, Expr* e2)
-        : Bin_Expr<arithmatic_operators>(arith_kind, t, e1, e2)
+struct Add_Expr : Bin_Expr {
+    Add_Expr(binop op, Expr* e1, Expr* e2)
+        : Bin_Expr(arith_kind, op, e1, e2)
     {}
-
 };
 
-struct Log_Expr : Bin_Expr<logical_operators> {
-    Log_Expr(logical_operators t, Expr* e1, Expr* e2)
-        : Bin_Expr<logical_operators>(log_kind, t, e1, e2)
+struct Log_Expr : Bin_Expr {
+    Log_Expr(binop op, Expr* e1, Expr* e2)
+        : Bin_Expr(log_kind, op, e1, e2)
     {}
-
 };
 
 struct Unary_Expr : Expr {

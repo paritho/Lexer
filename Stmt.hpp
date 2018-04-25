@@ -12,13 +12,13 @@ enum stmt_kind {
     while_kind,
     decl_kind,
     expr_kind,
-    breaking
+    breaking_kind
 };
 
-enum breaking_kind {
-    break_kind,
-    continue_kind,
-    return_kind
+enum breaking_stmt {
+    break_stmt,
+    continue_stmt,
+    return_stmt
 };
 
 struct Stmt {
@@ -89,14 +89,14 @@ struct While_Stmt : Stmt {
 
 // for break; continue; and return;
 struct Breaking_Stmt : Stmt {
-    Breaking_Stmt(breaking_kind bk)
-        : Stmt(breaking),
+    Breaking_Stmt(breaking_stmt bk)
+        : Stmt(breaking_kind),
           kind(bk)
     {}
 
-    breaking_kind get_kind_of_breaking() { return kind; }
+    breaking_stmt get_kind_of_breaking() { return kind; }
 
-    breaking_kind kind;
+    breaking_stmt kind;
 };
 
 struct Decl_Stmt : Stmt {

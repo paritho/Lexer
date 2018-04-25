@@ -31,11 +31,6 @@ Parser::parse_basic_type(){
         Type* t2 = parse_type();
         return actions.on_function_type(t1, tl, t2);
     }
-
-    Token token = peek();
-    assert(token.get_name() == token_type_specifier);
-    return actions.on_basic_type(accept());
-    }
     
     return t1;
 }
@@ -136,7 +131,7 @@ Parser::parse_conditional_expr(){
         Expr* e1 = parse_expr();
         match(token_colon);
         Expr* e2 = parse_conditional_expr();
-        return actions.on_conditional_expr(e e1, e2);
+        return actions.on_conditional_expr(e, e1, e2);
     }
 
   return e;
@@ -148,7 +143,7 @@ Parser::parse_log_or_expr(){
     Expr* e1 = parse_log_and_expr();
     while(Token token = matchif_log_OR()) {
         Expr* e2 = parse_log_and_expr();
-        e1 = actions.on_log_or_expr(token, e1, e2);
+        e1 = actions.on_log_or_expr(e1, e2);
     }
     return e1;
 }
@@ -159,7 +154,7 @@ Parser::parse_log_and_expr(){
     Expr* e1 = parse_bit_or_expr();
     while(Token token = matchif_log_AND()) {
         Expr* e2 = parse_bit_or_expr();
-        e1 = actions.on_log_and_expr(token, e1, e2);
+        e1 = actions.on_log_and_expr(e1, e2);
     } 
     return e1;
 }
@@ -170,7 +165,7 @@ Parser::parse_bit_or_expr(){
     Expr* e1 = parse_bit_xor_expr();
     while(Token token = matchif_bit_or()) {
         Expr* e2 = parse_bit_xor_expr(); 
-        e1 = actions.on_bin_or_expr(token, e1, e2);
+        e1 = actions.on_bin_or_expr(e1, e2);
     } 
     return e1;
 }
@@ -181,7 +176,7 @@ Parser::parse_bit_xor_expr(){
     Expr* e1 = parse_bit_and_expr();
     while(Token token = matchif_bit_xor()){
         Expr* e2 = parse_bit_and_expr();
-        e1 = actions.on_bin_xor_expr(token, e1, e2);
+        e1 = actions.on_bin_xor_expr(e1, e2);
     }
     return e1;
 }
@@ -192,7 +187,7 @@ Parser::parse_bit_and_expr(){
     Expr* e1 = parse_relational_expr();
     while(Token token = matchif_bit_and()) {
         Expr* e2 = parse_relational_expr();
-        e1 = actions.on_bin_and_expr(token, e1, e2);
+        e1 = actions.on_bin_and_expr(e1, e2);
     }
     return e1;
 }
@@ -203,7 +198,7 @@ Parser::parse_equality_expr(){
     Expr* e1 = parse_relational_expr();
     while(Token token = matchif_eq()) {
         Expr* e2 = parse_relational_expr();
-        e1 = actions.on_eq_expr(token, e1, e2);
+        e1 = actions.on_eq_expr(e1, e2);
     }
     return e1;
 }
@@ -215,7 +210,7 @@ Parser::parse_relational_expr(){
     Expr* e1 = parse_shift_expr();
     while(Token token = matchif_rel()) {
         Expr* e2 = parse_shift_expr();
-        e1 = actions.on_rel_expr(token, e1, e2);    
+        e1 = actions.on_rel_expr(e1, e2);    
     }
     return e1;
 }
@@ -226,7 +221,7 @@ Parser::parse_shift_expr(){
     Expr* e1 = parse_add_expr();
     while(Token token = matchif_shift()) {
         Expr* e2 = parse_add_expr();
-        e1 = actions.on_shift_expr(token, e1, e2);
+        e1 = actions.on_shift_expr(e1, e2);
     } 
     return e1;
 }
@@ -238,7 +233,7 @@ Parser::parse_add_expr(){
     Expr* e1 = parse_mult_expr();
     while(Token token = matchif_add()){
         Expr* e2 = parse_mult_expr();
-        e1 = actions.on_add_expr(token, e1, e2);
+        e1 = actions.on_add_expr(e1, e2);
     }
 
     return e1;
@@ -251,7 +246,7 @@ Parser::parse_mult_expr(){
     Expr* e1 = parse_cast_expr();
     while(Token token = matchif_mult()) {
         Expr* e2 = parse_cast_expr();
-        e1 = actions.on_mult_expr(token, e1, e2);
+        e1 = actions.on_mult_expr(e1, e2);
     }
     return e1;
 }
@@ -272,7 +267,7 @@ Parser::parse_unary_expr(){
     Expr* e1 = parse_postfix_expr();
     while(Token token = matchif(token_unary_op)){
         Expr* e2 = parse_unary_expr();   
-        e1 = actions.on_unary_expr(token, e2);
+        e1 = actions.on_unary_expr( e2);
     } 
     return e1;
 }
@@ -351,11 +346,12 @@ Parser::parse_primary_expr(){
       case token_identifier:
           return actions.on_id_expr(accept());
 
-      case token_left_paren:
+      case token_left_paren:{
           match(token_left_paren);
           Expr* e = parse_expr();
           match(token_right_paren);
           return e;
+      }
       default:
           break; 
     }
@@ -372,38 +368,35 @@ Parser::parse_stmt(){
     Token token = peek();
     if(token.get_name() == token_left_brace) return parse_block_stmt();
     
+    Expr* e = parse_primary_expr();
+
     // may need to switch on get_sym_attr().get();
     if(token.get_name() == token_keywords){
         switch(token.get_key_attr()){
             case key_def:
-                parse_decl();
-                return;
+                return parse_decl();
             case key_return:
-                parse_return_stmt();
-                return;
+                return parse_return_stmt();
             case key_continue:
             case key_break:
-                parse_breaking_stmt();
-                return;
+                return parse_breaking_stmt();
             case key_while:
-                parse_while_stmt();
-                return;
+                return parse_while_stmt();
             case key_if:
-                parse_if_stmt();
-                return;
+                return parse_if_stmt();
             default:
                 throw std::runtime_error("Expected a keyword");
         }
     }
 
-    parse_primary_expr();
+    return e;
 }
 
 // { stmtseq }
 Stmt*
 Parser::parse_block_stmt(){
     match(token_left_brace);
-    parse_stmtseq();
+    Stmt* s = parse_stmtseq();
     match(token_right_brace);
 }
 
@@ -414,9 +407,11 @@ Parser::parse_breaking_stmt(){
     assert(token.get_name() == token_keywords);
     switch(token.get_key_attr()){
         case key_break:
+            accept();
+            return actions.on_break_stmt();
         case key_continue:
             accept();
-            break;
+            return actions.on_continue_stmt();
         default:
             throw std::runtime_error("Expected Breaking Statment");
     }
@@ -430,11 +425,15 @@ Parser::parse_if_stmt(){
     assert(peek().get_name() == token_keywords);
     accept();
     match(token_left_paren);
-    parse_primary_expr();
+    Expr* e = parse_primary_expr();
     match(token_right_paren);
-    parse_stmt();
+    Stmt* s1 = parse_stmt();
     Token token = peek();
-    if(token.get_name() == token_keywords && token.get_key_attr() == key_else) parse_stmt();
+    if(token.get_name() == token_keywords && token.get_key_attr() == key_else) {
+        Stmt* s2 = parse_stmt();
+        return actiona.on_if_else_stmt(e, s1, s2);
+    }
+    return actions.on_if_stmt(e,s1);
 }
 
 // while ( expr ) stmt
@@ -443,9 +442,11 @@ Parser::parse_while_stmt(){
     assert(peek().get_name() == token_keywords);
     accept();
     match(token_left_paren);
-    parse_primary_expr();
+    Expr* e = parse_primary_expr();
     match(token_right_paren);
-    parse_stmt();
+    Stmt* s = parse_stmt();
+
+    return actions.on_while_stmt(e, s);
 }
 
 // stmtseq stmt | stmt
@@ -464,7 +465,7 @@ Parser::parse_return_stmt(){
         match(token_semicolon);
         return;
     }
-    parse_primary_expr();
+    Expr* e = parse_primary_expr();
     match(token_semicolon);
 }
 

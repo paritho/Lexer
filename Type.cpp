@@ -1,7 +1,7 @@
 
 #include "Type.hpp"
 
-static bool is_same_type(Types* t1, Types* t2){
+static bool is_same_type(Type* t1, Type* t2){
     if(t1 == t2) return true;
 
     if(t1->get_name() != t2->get_name()) return false;
@@ -29,15 +29,15 @@ static bool is_same_type(Types* t1, Types* t2){
 
 // function type is the same if the params types and return types
 // are all the same
-static bool is_same_func(Types* t1, Types* t2){
+static bool is_same_func(Type* t1, Type* t2){
     Type_List& t1params = t1->get_params();
     Type_List& t2params = t2->get_params();
 
-    Types* t1ret = t1->get_ret_type();
-    Types* t2ret = t2->get_ret_type();
+    Type* t1ret = t1->get_ret_type();
+    Type* t2ret = t2->get_ret_type();
 
     // comparitor function for use in std::equals
-    auto compare = [](Types* a, Types* b){
+    auto compare = [](Type* a, Type* b){
         return is_same_type(a,b);
     };
 
@@ -46,4 +46,20 @@ static bool is_same_func(Types* t1, Types* t2){
                                 compare);
     
     return eq_params && (t1ret == t2ret);
+}
+
+
+bool
+Type::is_ref_to(Type* t){
+    if(t->get_name() == type_ref)
+        return is_same_type(t->get_obj_type(), new Ref_Type());
+    return false;
+}
+
+// same note as above
+bool 
+Type::is_prt_to(Type* t){
+    if(t->get_name() == type_ptr)
+        return is_same_type(t->get_el_type(), new Ptr_Type());
+    return false;
 }

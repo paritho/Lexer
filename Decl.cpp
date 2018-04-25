@@ -1,7 +1,7 @@
 
 #include "Decl.hpp"
 
-Types*
+Type*
 Function_Decl::get_return_type() {
 
 }
