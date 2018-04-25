@@ -1,11 +1,13 @@
 #pragma once
 
 #include <vector>
-#include "Type.hpp"
+#include "AST.hpp"
 
-using Expr_List = std::vector<Expr*>;
+class Type;
+class Decl;
+class Stmt;
 
-enum kind {
+enum expr_kind {
     conversion,
     int_kind,
     bool_kind,
@@ -32,11 +34,11 @@ enum kind {
 };
 
 enum unop {
-    pos,
-    neg,
-    not,
-    address,
-    dereference
+    pos_uop,
+    neg_uop,
+    not_uop,
+    add_uop,
+    defre_uop
 };
 
 enum binop{
@@ -73,20 +75,22 @@ enum conv_kind{
 };
 
 struct Expr {
-    Expr(kind k, Type* t)
+    Expr(expr_kind k, Type* t)
         : kind(k),
           type(t)
     {}
 
     virtual ~Expr() = default;
 
-    kind get_kind() const { return kind; }
+    expr_kind get_kind() const { return kind; }
     Type* get_type() { return type; }
 
     private:
-    kind kind;
+    expr_kind kind;
     Type* type;
 };
+
+using Expr_List = std::vector<Expr*>;
 
 struct Int_Expr : Expr {
     Int_Expr(long long n)
@@ -195,7 +199,7 @@ struct Conversion_Expr : Expr {
     Conversion_Expr(Expr* src, conv_kind ck, Type* t)
         : Expr(conversion, nullptr),
           src(src),
-          kind(ck),
+          expr_kind(ck),
           dest(t)
     {}
 
@@ -203,13 +207,13 @@ struct Conversion_Expr : Expr {
     Expr* get_src() { return src; }
 
     Expr* src;
-    conv_kind kind;
+    conv_kind expr_kind;
     Type* dest;
 };
 
 // add, mult, bin, log, eq, rel, shift
 struct Bin_Expr : Expr {
-    Bin_Expr(kind k, binop op, Expr* e1, Expr* e2)
+    Bin_Expr(expr_kind k, binop op, Expr* e1, Expr* e2)
         : Expr(k, new Arith_Type()),
           op(op),
           e1(e1),
@@ -236,15 +240,16 @@ struct Log_Expr : Bin_Expr {
 struct Unary_Expr : Expr {
     Unary_Expr(unop op, Expr* expr)
         : Expr(unary_kind, new Unary_Type()),
-          e(expr)
+          e(expr),
+          uop(op)
     {}
 
-    unop unop;
+    unop uop;
     Expr* e;
 };
 
 struct Postfix_Expr : Expr {
-    Postfix_Expr(kind k, Expr* expr, Expr_List& args)
+    Postfix_Expr(expr_kind k, Expr* expr, Expr_List& args)
         : Expr(k, new Post_Type()),
           base(expr),
           args(args)

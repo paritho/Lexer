@@ -2,9 +2,6 @@
 
 #include <vector>
 
-using Type_List = std::vector<Type*>;
-
-
 enum type_name{
     type_void,
     type_bool,
@@ -17,7 +14,6 @@ enum type_name{
     type_unary,
     type_func,
     type_ptr,
-    type_ref,
 
     // note: there will be no operations on these types:
     id_type, 
@@ -38,6 +34,8 @@ struct Type {
     private:
     type_name name;
 };
+
+using Type_List = std::vector<Type*>;
 
 struct Void_Type : Type {
     Void_Type()

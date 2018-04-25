@@ -6,7 +6,7 @@
 
 using Decl_List = std::vector<Decl*>;
 
-enum kind {
+enum decl_kind {
     var_decl,
     let_decl,
     value_decl,
@@ -16,7 +16,7 @@ enum kind {
 };
 
 struct Decl{
-    Decl(const char* str, kind k, Type* t = nullptr)
+    Decl(const char* str, decl_kind k, Type* t = nullptr)
         : name(str),
           kind(k)
     {}
@@ -24,11 +24,11 @@ struct Decl{
     virtual ~Decl() = default;
 
     const char* get_name(){ return name; }
-    kind get_kind() { return kind; }
+    decl_kind get_kind() { return kind; }
 
     private:
     const char* name;
-    kind kind;
+    decl_kind kind;
     Type* t;
 
 };
@@ -60,10 +60,10 @@ struct Prog_Decl : Decl {
 
     private:
     Decl_List decls;
-}
+};
 
 struct Obj_Decl : Decl {
-    Obj_Decl(const char* str, kind k, Type* t, Expr* e) 
+    Obj_Decl(const char* str, decl_kind k, Type* t, Expr* e) 
         : Decl(str, k, t),
           t(t),
           e(e)
@@ -79,7 +79,7 @@ struct Obj_Decl : Decl {
 
 struct Var_Decl : Obj_Decl {
     Var_Decl(const char* str, Type* t, Expr* e = nullptr) 
-        : Obj_Decl(str, var, t, e)
+        : Obj_Decl(str, var_decl, t, e)
     {}
 };
 
@@ -90,8 +90,8 @@ struct Const_Decl : Obj_Decl {
 };
 
 struct Value_Decl : Obj_Decl {
-    Value_Decl(const char* str, kind k, Type* t, Expr* e) 
-        : Decl(str, value_decl, t,e)
+    Value_Decl(const char* str, decl_kind k, Type* t, Expr* e) 
+        : Obj_Decl(str, value_decl, t, e)
     {}
 };
 
@@ -100,7 +100,7 @@ struct Param_Decl : Obj_Decl{
         : Obj_Decl(str, param_decl, t, nullptr)
     { };
 
-    void add_seq(Decl* d){ return sequence.emplace(d); }
+    void add_seq(Decl* d){ sequence.emplace(d); return; }
     Decl* get_next_decl(){ return sequence.pop(); }
 
     private:
