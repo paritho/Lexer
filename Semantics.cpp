@@ -22,27 +22,27 @@ Semantics::on_basic_type(Token t){
 
 Type*
 Semantics::on_post_type_expr(Token t, Expr* e){
-
+    return new Post_Type();
 }
 
 Type*
 Semantics::on_ast_type(Token t){
-
+    return new Ptr_Type();
 }
 
 Type*
 Semantics::on_parse_postfix_type(){
-
+    // TODO: implement
 }
 
 Type*
 Semantics::on_ref_type(Token t){
-
+    return new Ref_Type();
 }
 
 Type*
 Semantics::on_function_type(Type* t1, Type_List tl, Type* t2){
-
+    return new Func_Type();
 }
 
 Type*
@@ -160,7 +160,7 @@ Semantics::on_assign_expr(Expr* e1, Expr* e2){
     if(!mustbe_same(t1, t2)) 
         throw std::runtime_error("Types in Assign Expr not same");
 
-    return new Assign_Expr(e1->get_type(), e1, e2);
+    return new Assign_Expr(*e1->get_type(), e1, e2);
 }
 
 Expr*
@@ -261,39 +261,59 @@ Semantics::on_cast_expr(Expr* e, Type* t){
 }
 
 Expr*
-Semantics::on_unary_expr(Expr* e1, Expr* e2){
+Semantics::on_unary_expr(Token token, Expr* e){
+    unary_operators uop = token.get_unop_attr();
+    Type* t;
+    switch(uop){
+        case uop_increment:
+        case uop_decrement:
+            e = mustbe_arith(e);
+            t = e->get_type();
+            break;
+        case uop_log_not:
+            e = mustbe_bool(e);
+            t = e->get_type();
+            break;
+        case uop_compare:
+            e = mustbe_int(e);
+            t = e->get_type();
+            break;
+        // ref is a ptr
+        case uop_ref:
+        case uop_ptr:
+            e = mustbe_reference(e);
+            t = e->get_type();
+            break;
+    }
 
+    return new Unary_Expr(uop, t, e);
 }
 
 Expr*
-Semantics::on_post_expr(Expr* e1, Expr_List el, Expr* e2){
+Semantics::on_call_expr(Expr* e, Expr_List& args){
+    e = mustbe_funct(e);
+    Func_Type* f = static_cast<Func_Type*>(e->get_type());
+    
+    // TODO: params need to be in a type_list not expr_list
+    Type_List* params = f->get_params();
+    if(params.size() < args.size() || args.size() < params.size()) 
+        throw std::runtime_error('Arg size doesnt match params');
+    //TODO: check if args and params match
 
+    return new Call_Expr(e, f->get_ret_type(), args);
 }
 
-// NOTE: check for existance of e1
-Expr_List
-Semantics::on_arg_list(Token t, Expr_List el, Expr* e1, Expr* e2){
+Expr*
+Semantics::on_index_expr(Expr* e, Expr_List& args){
+    Index_Expr* ie = static_cast<Index_Expr*>(e);
+    // we don't have array specification?
+    return ie;
 
 }
 
 //---------------------------------------------------------------------
 //----------------------------- STMT ----------------------------------
 //---------------------------------------------------------------------
-Stmt*
-Semantics::on_parse_stmt(){
-
-}
-
-Stmt*
-Semantics::on_enter_block_stmt(){
-
-}
-
-Stmt*
-Semantics::on_leave_block_stmt(){
-
-}
-
 Stmt*
 Semantics::on_if_stmt(Expr* e, Stmt* s){
     return new If_Stmt(e, s);
@@ -324,6 +344,20 @@ Semantics::on_continue_stmt(){
     return new Breaking_Stmt(continue_stmt);
 }
 
+void 
+Semantics::enter_block(){
+    Scope* enc = get_enclosing_scope();
+    if(dynamic_cast<Global_Scope*>(enc)){
+        Function_Decl* curFnc = get_cur_func();
+        for(Decl* param : curFnc->get_params()) declare(param);
+    }
+}
+
+void
+Semantics::leave_block(){
+    leave_current_scope();
+}
+
 //------------------------------------------------------------------------
 //---------------------------- DECL --------------------------------------
 //------------------------------------------------------------------------
@@ -331,44 +365,108 @@ Semantics::on_continue_stmt(){
 //Name lookup happens inside the _def function
 Decl*
 Semantics::on_obj_decl(Token token, Type* t){
-
+    Decl* d = new Value_Decl(token.get_sym_attr(), t);
+    declare(d);
+    return d;
 }
 
 Decl*
-Semantics::on_obj_def(Token token, Type* t, Expr* e){
-
+Semantics::on_obj_def(Decl* decl, Type* t, Expr* e){
+    Value_Decl* d = static_cast<Value_Decl*>(decl);
+    d->set_initialized(e);
+    return d;
 }
 
 Decl*
 Semantics::on_var_decl(Token token, Type* t){
-
+    Decl* d = new Var_Decl(token.get_sym_attr(), t);
+    declare(d);
+    return d;
 }
 
 Decl*
-Semantics::on_var_def(Token token, Type* t, Expr* e){
+Semantics::on_var_def(Decl* decl, Type* t, Expr* e){
+    Var_Decl* d = static_cast<Var_Decl*>(decl);
+    d->set_initialized(e);
+    return d;
+}
 
+
+Decl*
+Semantics::on_const_decl(Token token, Type* t){
+    Decl* d = new Const_Decl(token.get_sym_attr(), t);
+    declare(d);
+    return d;
 }
 
 Decl*
-Semantics::on_function_decl(Token token, Decl_List dl, Type* t){
-
+Semantics::on_const_def(Decl* decl, Type* t, Expr* e){
+    Const_Decl* d = static_cast<Const_Decl*>(decl);
+    d->set_initialized(e);
+    return d;
 }
 
 Decl*
-Semantics::on_function_def(Token token, Decl_List dl, Stmt* stmt, Type* t){
+Semantics::on_function_def(Decl* decl, Stmt* s){
+    Function_Decl* f = static_cast<Function_Decl*>(decl);
+    f->set_body(s);
 
+    currFunc = nullptr;
+    return f;
 }
+
+Decl*
+Semantics::on_function_decl(Token token, Decl_List& dl, Type* t){
+    // TODO: params needs to be a type_list not decl_list
+    Func_Type* ft = new Func_Type(params, t);
+    Function_Decl* f = new Function_Decl(token.get_sym_attr(),parms);
+    f->set_type(t);
+
+    declare(f);
+    currFunc = f;
+    return f;
+}   
 
 Decl*
 Semantics::on_param_decl(Token token, Type* t){
-
+    Decl* param = new Param_Decl(token.get_sym_attr(), t);
+    declare(param);
+    return param;
 }
 
 Decl*
 Semantics::on_program(Decl_List& dl){
-
+    return new Prog_Decl(dl);
 }
 
+Decl*
+Semantics::lookup(symbol name){
+    Scope* s = get_current_scope();
+    while(s){
+        if(Decl* d = s->lookup(name)) return d;
+        // enclosing scope is the parent scope
+        s = s->get_enclosing_scope();
+    }
+    // if here, there was no successfull lookup
+    return nullptr;
+}
+
+void
+Semantics::declare(Decl* d){
+    Scope* s = get_current_scope();
+    // if the symbol was already declared, throw error
+    if(s->lookup_name(d->get_name())){
+        std::stringstream ss;
+        ss << "Redeclaration of " << d->get_name();
+        throw std::runtime_error(ss.str());
+    }    
+    // otherwise, add symbol to the table
+    s->declare(d->get_name());
+}
+
+//------------------------------------------------------------------------
+//---------------------------- CONV --------------------------------------
+//------------------------------------------------------------------------
 Expr*
 conv_tval(Expr* e){
     if(e->get_kind() == ref_kind)

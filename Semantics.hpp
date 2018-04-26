@@ -48,8 +48,7 @@ struct Semantics {
     Expr* on_cast_expr(Expr* e, Type* t);
     Expr* on_call_expr(Expr* e, Expr_List& args);
     Expr* on_index_expr(Expr* e, Expr_List& args);
-    Expr* on_unary_expr(Expr* e1, Expr* e2);
-    Expr* on_post_expr(Expr* e1, Expr_List el, Expr* e2);
+    Expr* on_unary_expr(Token token, Expr* e);
 
     Stmt* on_if_stmt(Expr* e, Stmt* s);
     Stmt* on_if_else_stmt(Expr* e, Stmt* s1, Stmt* s2);
@@ -65,25 +64,20 @@ struct Semantics {
 
     // Declarations. Name lookup happens inside the _def function
     Decl* on_obj_decl(Token token, Type* t);
-    Decl* on_obj_def(Token token, Type* t, Expr* e);
+    Decl* on_obj_def(Decl* decl, Type* t, Expr* e);
     Decl* on_var_decl(Token token, Type* t);
-    Decl* on_var_def(Token token, Type* t, Expr* e);
-    Decl* on_function_decl(Token token, Decl_List dl, Type* t);
-    Decl* on_function_def(Token token, Decl_List dl, Stmt* stmt, Type* t);
+    Decl* on_var_def(Decl* decl, Type* t, Expr* e);
+    Decl* on_const_def(Decl* decl, Type* t, Expr* e);
+    Decl* on_const_decl(Token token, Type* t);
+    Decl* on_function_def(Decl* decl, Stmt* s);
+    Decl* on_function_decl(Token token, Decl_List& dl, Type* t);
     Decl* on_param_decl(Token token, Type* t);
     Decl* on_program(Decl_List& dl);
 
-    void declare(Decl* d){
-        Scope* s = get_current_scope();
-        // if the symbol was already declared, throw error
-        if(s->lookup_name(d->get_name())){
-            std::stringstream ss;
-            ss << "Redeclaration of " << d->get_name();
-            throw std::runtime_error(ss.str());
-        }    
-        // otherwise, add symbol to the table
-        s->declare(d->get_name());
-    }
+    Function_Decl* get_cur_func(){ return currFunc; }
+    void set_cur_func(Function_Decl* func){ currFunc = func; }
+
+    void declare(Decl* d);
 
     Decl* lookup(symbol name);
 
@@ -98,27 +92,34 @@ struct Semantics {
     // asserting functions
     Expr* mustbe_reference(Expr* e);
     Expr* mustbe_value(Expr* e);
-    bool mustbe_same(Type* t1, Type* t2);
     Expr* mustbe_int(Expr* e);
     Expr* mustbe_bool(Expr* e);
     Expr* mustbe_funct(Expr* e);
     Expr* mustbe_arith(Expr* e);
+    Type* mustbe_same(Type* t1, Type* t2);
 
     // handling scope
-    void enter_global_scope();
-    void enter_param_scope();
+    void enter_global_scope(){
+        scope = new Global_Scope();
+    }
+    void enter_param_scope(){
+        scope = new Param_Scope(scope);
+    }
+    void enter_block_scope(){
+        scope = new Block_Scope(scope);
+    }
     void leave_current_scope(){
         Scope* current = scope;
         scope = current->get_enclosing_scope();
+        delete current;
     };
-
     Scope* get_current_scope() { return scope; };
-
     Scope* get_enclosing_scope(){ 
         return scope->get_enclosing_scope();
     };
 
     private:
     Scope* scope;
+    Function_Decl* currFunc;
 
 };

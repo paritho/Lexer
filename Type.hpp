@@ -21,6 +21,7 @@ enum type_name{
 };
 
 struct Type {
+    Type() = default;
     Type(type_name tn)
         : name(tn)
     {}
@@ -80,6 +81,7 @@ struct Id_Type : Type {
 };
 
 struct Ptr_Type : Type {
+    Ptr_Type() = default;
     Ptr_Type(Type* t)
         : Type(type_ptr),
           el(t)
@@ -91,6 +93,7 @@ struct Ptr_Type : Type {
 };
 
 struct Ref_Type : Type {
+    Ref_Type() = default;
     Ref_Type(Type* t)
         : Type(type_ref),
           el(t)
@@ -120,6 +123,7 @@ struct Unary_Type : Type {
 };
 
 struct Func_Type : Type {
+    Func_Type() = default;
     Func_Type(Type_List& tl, Type* ret_type)
         : Type(type_func),
           params(tl),

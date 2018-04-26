@@ -40,12 +40,13 @@ struct Parser{
 
     // stmts
     Stmt* parse_stmt();
+    Stmt* parse_expr_stmt();
     Stmt* parse_block_stmt();
     Stmt* parse_breaking_stmt();
     Stmt* parse_if_stmt();
     Stmt* parse_while_stmt();
-    Stmt* parse_stmtseq();
-    Stmt_List parse_return_stmt();
+    Stmt* parse_return_stmt();
+    Stmt_List parse_stmtseq();
 
     // declarations and definitions
     Decl* parse_decl();

@@ -82,14 +82,12 @@ enum logical_operators
 
 enum unary_operators
 {
-    uop_asterix,
-    uop_const,
-    uop_volatile,
     uop_increment,
     uop_decrement,
-    uop_bit_not,
     uop_log_not,
     uop_ref,
+    uop_ptr,
+    uop_compare
 };
 
 enum keywords
