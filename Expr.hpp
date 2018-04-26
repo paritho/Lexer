@@ -39,7 +39,7 @@ enum unop {
     uop_log_not,
     uop_ref,
     uop_ptr,
-    uop_compare
+    uop_compliment
 };
 
 enum binop{
