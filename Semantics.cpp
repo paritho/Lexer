@@ -274,7 +274,7 @@ Semantics::on_unary_expr(Token token, Expr* e){
             e = mustbe_bool(e);
             t = e->get_type();
             break;
-        case uop_compare:
+        case uop_compliment:
             e = mustbe_int(e);
             t = e->get_type();
             break;
