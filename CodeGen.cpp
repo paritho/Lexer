@@ -1,8 +1,8 @@
 #include "codegen.hpp"
-#include "type.hpp"
-#include "expr.hpp"
-#include "decl.hpp"
-#include "stmt.hpp"
+#include "Type.hpp"
+#include "Expr.hpp"
+#include "Decl.hpp"
+#include "Stmt.hpp"
 
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
@@ -18,7 +18,7 @@
 #include <unordered_map>
 
 /// Associates declarations with values.
-using variable_map = std::unordered_map<const decl*, llvm::Value*>;
+using variable_map = std::unordered_map<const Decl*, llvm::Value*>;
 
 // -------------------------------------------------------------------------- //
 // Root context
@@ -40,21 +40,25 @@ struct cg_context
   // Names
 
   /// Returns a name for the declaration.
-  std::string get_name(const decl* d);
+  std::string get_name(const Decl* d);
 
   // Types
 
-  /// Generate the corresponding type for `t`.
-  llvm::Type* get_type(const type* t);
-  llvm::Type* get_bool_type(const bool_type* t);
-  llvm::Type* get_char_type(const char_type* t);
-  llvm::Type* get_int_type(const int_type* t);
-  llvm::Type* get_float_type(const float_type* t);
-  llvm::Type* get_ref_type(const ref_type* t);
-  llvm::Type* get_fn_type(const fn_type* t);
+  /// Generate the corresponding Type for `t`.
+  llvm::Type* get_type(const Type* t);
+  llvm::Type* get_bool_type(const Bool_Type* t);
+  llvm::Type* get_char_type(const Char_Type* t);
+  llvm::Type* get_int_type(const Int_Type* t);
+  llvm::Type* get_float_type(const Float_Type* t);
+  llvm::Type* get_ref_type(const Ref_Type* t);
+  llvm::Type* get_str_type(const String_Type* t);
+  llvm::Type* get_ptr_type(const Ptr_Type* t);
+  llvm::Type* get_postfix_type(const Post_Type* t);
+  llvm::Type* get_unary_type(const Unary_Type* t);
+  llvm::Type* get_fn_type(const Func_Type* t);
 
-  /// Returns the corresponding type for the declaration `d`.
-  llvm::Type* get_type(const typed_decl* d);
+  /// Returns the corresponding Type for the declaration `d`.
+  llvm::Type* get_type(const Obj_Decl* d);
 
   /// The underlying LLVM context.
   llvm::LLVMContext* ll;
@@ -67,7 +71,7 @@ struct cg_context
 /// and referencing module-level declarations.
 struct cg_module
 {
-  cg_module(cg_context& cxt, const prog_decl* prog);
+  cg_module(cg_context& cxt, const Prog_Decl* prog);
 
   /// Returns the LLVM context.
   llvm::LLVMContext* get_context() const { return parent->get_context(); }
@@ -78,37 +82,37 @@ struct cg_module
   //  Names
 
   /// Generates a declaration name for `d`.
-  std::string get_name(const decl* d) { return parent->get_name(d); }
+  std::string get_name(const Decl* d) { return parent->get_name(d); }
 
   // Types
 
-  /// Generate a corresponding type to `t`.
-  llvm::Type* get_type(const type* t) { return parent->get_type(t); }
+  /// Generate a corresponding Type to `t`.
+  llvm::Type* get_type(const Type* t) { return parent->get_type(t); }
 
-  /// Generates a type corresponding to the type `d`.
-  llvm::Type* get_type(const typed_decl* d) { return parent->get_type(d); }
+  /// Generates a Type corresponding to the Type `d`.
+  llvm::Type* get_type(const Obj_Decl* d) { return parent->get_type(d); }
 
   // Global values
 
   /// Associate the value `v` with the global declaration `d`.
-  void declare(const decl* d, llvm::GlobalValue* v);
+  void declare(const Decl* d, llvm::GlobalValue* v);
 
   /// Returns the global value corresponding to `d` or nullptr.
-  llvm::GlobalValue* lookup(const decl* d) const;
+  llvm::GlobalValue* lookup(const Decl* d) const;
 
   // Declaration generation
 
   /// Process expressions as top-level declarations.
   void generate();
-  void generate(const decl* d);
-  void generate_var_decl(const var_decl* d);
-  void generate_fn_decl(const fn_decl* d);
+  void generate(const Decl* d);
+  void generate_var_decl(const Var_Decl* d);
+  void generate_fn_decl(const Function_Decl* d);
 
   /// The parent context.
   cg_context* parent; 
 
   /// The corresponding translation unit.
-  const prog_decl* prog;  
+  const Prog_Decl* prog;  
   
   /// The underlying LLVM module.
   llvm::Module* mod; 
@@ -123,7 +127,7 @@ struct cg_module
 /// Provides the codegen context for expressions.
 struct cg_function
 {
-  cg_function(cg_module& m, const fn_decl* d);
+  cg_function(cg_module& m, const Function_Decl* d);
 
   // Context
 
@@ -139,26 +143,26 @@ struct cg_function
   // Names
 
   /// Returns the name for the declaration `d`.
-  std::string get_name(const decl* d) { return parent->get_name(d); }
+  std::string get_name(const Decl* d) { return parent->get_name(d); }
 
   // Types
 
-  /// Generates the type corresponding to the expression `e`.
-  llvm::Type* get_type(const type* t) { return parent->get_type(t); }
+  /// Generates the Type corresponding to the expression `e`.
+  llvm::Type* get_type(const Type* t) { return parent->get_type(t); }
 
-  /// Generates the type corresponding to the expression `e`.
-  llvm::Type* get_type(const expr* e) { return get_type(e->get_type()); }
+  /// Generates the Type corresponding to the expression `e`.
+  llvm::Type* get_type(const Expr* e) { return get_type(e->get_type()); }
 
-  /// Generate the corresponding type for `t`.
-  llvm::Type* get_type(const typed_decl* t) { return parent->get_type(t); }
+  /// Generate the corresponding Type for `t`.
+  llvm::Type* get_type(const Obj_Decl* t) { return parent->get_type(t); }
 
   // Local variables
 
   /// Declare a new local value.
-  void declare(const decl* x, llvm::Value* v);
+  void declare(const Decl* x, llvm::Value* v);
 
   /// Lookup a value. This may return a global value.
-  llvm::Value* lookup(const decl* x) const;
+  llvm::Value* lookup(const Decl* x) const;
 
   // Function definition
 
@@ -182,59 +186,61 @@ struct cg_function
   // Instruction generation
 
   /// Generate a list of instructions to compute the value of e.
-  llvm::Value* generate_expr(const expr* e);
-  llvm::Value* generate_bool_expr(const bool_expr* e);
-  llvm::Value* generate_int_expr(const int_expr* e);
-  llvm::Value* generate_float_expr(const float_expr* e);
-  llvm::Value* generate_id_expr(const id_expr* e);
-  llvm::Value* generate_unop_expr(const unop_expr* e);
-  llvm::Value* generate_arithmetic_expr(const unop_expr* e);
-  llvm::Value* generate_int_expr(const unop_expr* e);
-  llvm::Value* generate_float_expr(const unop_expr* e);
-  llvm::Value* generate_bitwise_expr(const unop_expr* e);
-  llvm::Value* generate_logical_expr(const unop_expr* e);
-  llvm::Value* generate_address_expr(const unop_expr* e);
-  llvm::Value* generate_deref_expr(const unop_expr* e);
-  llvm::Value* generate_binop_expr(const binop_expr* e);
-  llvm::Value* generate_arithmetic_expr(const binop_expr* e);
-  llvm::Value* generate_int_expr(const binop_expr* e);
-  llvm::Value* generate_float_expr(const binop_expr* e);
-  llvm::Value* generate_bitwise_expr(const binop_expr* e);
-  llvm::Value* generate_logical_expr(const binop_expr* e);
-  llvm::Value* generate_and_expr(const binop_expr* e);
-  llvm::Value* generate_or_expr(const binop_expr* e);
-  llvm::Value* generate_relational_expr(const binop_expr* e);
-  llvm::Value* generate_call_expr(const call_expr* e);
-  llvm::Value* generate_index_expr(const index_expr* e);
-  llvm::Value* generate_cast_expr(const cast_expr* e);
-  llvm::Value* generate_cond_expr(const cond_expr* e);
-  llvm::Value* generate_assign_expr(const assign_expr* e);
-  llvm::Value* generate_conv_expr(const conv_expr* e);
+  llvm::Value* generate_expr(const Expr* e);
+  llvm::Value* generate_bool_expr(const Bool_Expr* e);
+  llvm::Value* generate_int_expr(const Int_Expr* e);
+  llvm::Value* generate_float_expr(const Float_Expr* e);
+  llvm::Value* generate_id_expr(const Id_Expr* e);
+  llvm::Value* generate_unop_expr(const Unary_Expr* e);
+  llvm::Value* generate_arithmetic_expr(const Unary_Expr* e);
+  llvm::Value* generate_int_expr(const Unary_Expr* e);
+  llvm::Value* generate_float_expr(const Unary_Expr* e);
+  llvm::Value* generate_bitwise_expr(const Unary_Expr* e);
+  llvm::Value* generate_logical_expr(const Unary_Expr* e);
+  llvm::Value* generate_address_expr(const Unary_Expr* e);
+  llvm::Value* generate_deref_expr(const Unary_Expr* e);
+  llvm::Value* generate_binop_expr(const Bin_Expr* e);
+  llvm::Value* generate_arithmetic_expr(const Bin_Expr* e);
+  llvm::Value* generate_int_expr(const Bin_Expr* e);
+  llvm::Value* generate_float_expr(const Bin_Expr* e);
+  llvm::Value* generate_bitwise_expr(const Bin_Expr* e);
+  llvm::Value* generate_logical_expr(const Bin_Expr* e);
+  llvm::Value* generate_and_expr(const Bin_Expr* e);
+  llvm::Value* generate_or_expr(const Bin_Expr* e);
+  llvm::Value* generate_relational_expr(const Bin_Expr* e);
+  llvm::Value* generate_call_expr(const Call_Expr* e);
+  llvm::Value* generate_index_expr(const Index_Expr* e);
+  llvm::Value* generate_cast_expr(const Cast_Expr* e);
+  llvm::Value* generate_cond_expr(const Conditional_Expr* e);
+  llvm::Value* generate_assign_expr(const Assign_Expr* e);
+  llvm::Value* generate_conv_expr(const Conversion_Expr* e);
 
   // Statements
-  void generate_stmt(const stmt* s);
-  void generate_block_stmt(const block_stmt* s);
-  void generate_when_stmt(const when_stmt* s);
-  void generate_if_stmt(const if_stmt* s);
-  void generate_while_stmt(const while_stmt* s);
-  void generate_break_stmt(const break_stmt* s);
-  void generate_cont_stmt(const cont_stmt* s);
-  void generate_ret_stmt(const ret_stmt* s);
-  void generate_decl_stmt(const decl_stmt* s);
-  void generate_expr_stmt(const expr_stmt* s);
+  void generate_stmt(const Stmt* s);
+  void generate_block_stmt(const Blo* s);
+  // no when in lang?
+  //void generate_when_stmt(const when_stmt* s);
+  void generate_if_stmt(const If_Stmt* s);
+  void generate_if_else_stmt(const If_Else_Stmt* s);
+  void generate_while_stmt(const While_Stmt* s);
+  void generate_break_stmt(const Breaking_Stmt* s);
+  void generate_cont_stmt(const Breaking_Stmt* s);
+  void generate_ret_stmt(const Breaking_Stmt* s);
+  void generate_decl_stmt(const Decl_Stmt* s);
+  void generate_expr_stmt(const Expr_Stmt* s);
 
   // Local declarations
-  void generate_decl(const decl* d);
-  void generate_var_decl(const var_decl* d);
+  void generate_decl(const Decl* d);
+  void generate_var_decl(const Var_Decl* d);
 
-  void make_variable(const var_decl* d);
-  void make_reference(const var_decl* d);
+  void make_variable(const Var_Decl* d);
+  void make_reference(const Var_Decl* d);
 
   /// The parent module context.
   cg_module* parent;
 
   /// The function original function
-  const fn_decl* src;
+  const Function_Decl* src;
   
   /// The underlying function being defined
   llvm::Function* fn;
@@ -253,88 +259,127 @@ struct cg_function
 // Context implementation
 
 std::string
-cg_context::get_name(const decl* d)
+cg_context::get_name(const Decl* d)
 {
   assert(d->get_name());
-  return *d->get_name();
+  std::stringstream ss;
+  ss << *d->get_name();
+  return ss.str();
 }
 
-/// Generate the corresponding type.
+/// Generate the corresponding Type.
 llvm::Type* 
-cg_context::get_type(const type* t)
+cg_context::get_type(const Type* t)
 {
-  // Make sure we're looking at the semantic, not lexical type.
-  switch (t->get_kind()) {
-  case type::bool_kind:
-    return get_bool_type(static_cast<const bool_type*>(t));
-  case type::char_kind:
-    return get_char_type(static_cast<const char_type*>(t));
-  case type::int_kind:
-    return get_int_type(static_cast<const int_type*>(t));
-  case type::float_kind:
-    return get_float_type(static_cast<const float_type*>(t));
-  case type::ref_kind:
-    return get_ref_type(static_cast<const ref_type*>(t));
-  case type::fn_kind:
-    return get_fn_type(static_cast<const fn_type*>(t));
+  // Make sure we're looking at the semantic, not lexical Type.
+  switch (t->get_name()) {
+  case Type::type_bool:
+    return get_bool_type(static_cast<const Bool_Type*>(t));
+  case Type::type_char:
+    return get_char_type(static_cast<const Char_Type*>(t));
+  case Type::type_int:
+    return get_int_type(static_cast<const Int_Type*>(t));
+  case Type::type_float:
+    return get_float_type(static_cast<const Float_Type*>(t));
+  case Type::type_ref:
+    return get_ref_type(static_cast<const Ref_Type*>(t));
+  case Type::type_string:
+    return get_str_type(static_cast<const String_Type*>(t));
+  case Type::id_type:
+    return get_id_type(static_cast<const Id_Type*>(t));
+  case Type::type_ptr:
+    return get_ptr_type(static_cast<const Ptr_Type*>(t));
+  case Type::type_post:
+    return get_post_type(static_cast<const Post_Type*>(t));
+  case Type::type_unary:
+    return get_unary_type(static_cast<const Unary_Type*>(t));
+  case Type::type_func:
+    return get_fn_type(static_cast<const Func_Type*>(t));
   default:
-    throw std::logic_error("invalid type");
+    throw std::logic_error("invalid Type");
   }
 }
 
-/// The corresponding type is i1.
+/// The corresponding Type is i1.
 llvm::Type*
-cg_context::get_bool_type(const bool_type* t)
+cg_context::get_bool_type(const Bool_Type* t)
 {
   return llvm::Type::getInt1Ty(*ll);
 }
 
-/// The corresponding type is i8.
+/// The corresponding Type is i8.
 llvm::Type*
-cg_context::get_char_type(const char_type* t)
+cg_context::get_char_type(const Char_Type* t)
 {
   return llvm::Type::getInt8Ty(*ll);
 }
 
-/// The corresponding type is i32.
 llvm::Type*
-cg_context::get_int_type(const int_type* t)
+cg_context::get_str_type(const String_Type* t)
+{
+  return llvm::Type::getInt8Ty(*ll);
+}
+
+// assuming post_type would be i8
+llvm::Type*
+cg_context::get_str_type(const Post_Type* t)
+{
+  return llvm::Type::getInt8Ty(*ll);
+}
+
+// same here. Or would this be i32?
+llvm::Type*
+cg_context::get_str_type(const Unary_Type* t)
+{
+  return llvm::Type::getInt8Ty(*ll);
+}
+
+/// The corresponding Type is i32.
+llvm::Type*
+cg_context::get_int_type(const Int_Type* t)
 {
   return llvm::Type::getInt32Ty(*ll);
 }
 
-/// The corresponding type is float.
+/// The corresponding Type is float.
 llvm::Type*
-cg_context::get_float_type(const float_type* t)
+cg_context::get_float_type(const Float_Type* t)
 {
   return llvm::Type::getFloatTy(*ll);
 }
 
-/// Returns a pointer to the object type.
+/// Returns a pointer to the object Type.
 llvm::Type*
-cg_context::get_ref_type(const ref_type* t)
+cg_context::get_ref_type(const Ref_Type* t)
 {
-  llvm::Type* obj = get_type(t->get_object_type());
+  llvm::Type* obj = get_type(t->get_obj_type());
   return obj->getPointerTo();
 }
 
-/// Generate the type as a pointer. The actual function type can extracted
+llvm::Type*
+cg_context::get_ptr_type(const Ptr_Type* t)
+{
+  llvm::Type* obj = get_type(t->get_el_type());
+  return obj->getPointerTo();
+}
+
+/// Generate the Type as a pointer. The actual function Type can extracted
 /// as needed for creating functions.
 llvm::Type* 
-cg_context::get_fn_type(const fn_type* t)
+cg_context::get_fn_type(const Func_Type* t)
 {
-  const type_list& ps = t->get_parameter_types();
+  const type_list& ps = t->get_params();
   std::vector<llvm::Type*> parms(ps.size());
-  std::transform(ps.begin(), ps.end(), parms.begin(), [this](const type* p) {
+  std::transform(ps.begin(), ps.end(), parms.begin(), [this](const Type* p) {
     return get_type(p);
   });
-  llvm::Type* ret = get_type(t->get_return_type());
+  llvm::Type* ret = get_type(t->get_ret_type());
   llvm::Type* base = llvm::FunctionType::get(ret, parms, false);
   return base->getPointerTo();
 }
 
 llvm::Type*
-cg_context::get_type(const typed_decl* d)
+cg_context::get_type(const Obj_Decl* d)
 {
   return get_type(d->get_type());
 }
@@ -343,21 +388,21 @@ cg_context::get_type(const typed_decl* d)
 // Module implementation
 
 /// \todo Derive the name of the output file from compiler options.
-cg_module::cg_module(cg_context& cxt, const prog_decl* prog)
+cg_module::cg_module(cg_context& cxt, const Prog_Decl* prog)
   : parent(&cxt), 
     prog(prog), 
     mod(new llvm::Module("a.ll", *get_context()))
 { }
 
 void
-cg_module::declare(const decl* d, llvm::GlobalValue* v)
+cg_module::declare(const Decl* d, llvm::GlobalValue* v)
 {
   assert(globals.count(d) == 0);
   globals.emplace(d, v);
 }
 
 llvm::GlobalValue*
-cg_module::lookup(const decl* d) const
+cg_module::lookup(const Decl* d) const
 {
   auto iter = globals.find(d);
   if (iter != globals.end())
@@ -370,19 +415,20 @@ cg_module::lookup(const decl* d) const
 void 
 cg_module::generate()
 {
-  for (const decl* d : prog->get_declarations())
+  for (const Decl* d : prog->get_decls())
     generate(d);
 }
 
 void
-cg_module::generate(const decl* d)
+cg_module::generate(const Decl* d)
 {
   switch (d->get_kind()) {
-  case decl::var_kind:
-    return generate_var_decl(static_cast<const var_decl*>(d));
+  case Decl::var_decl:
+  case Decl::let_decl:
+    return generate_var_decl(static_cast<const Var_Decl*>(d));
   
-  case decl::fn_kind:
-    return generate_fn_decl(static_cast<const fn_decl*>(d));
+  case Decl::function_decl:
+    return generate_fn_decl(static_cast<const Function_Decl*>(d));
 
   default: 
     throw std::logic_error("invalid declaration");
@@ -399,7 +445,7 @@ cg_module::generate(const decl* d)
 /// \todo Make a variable initialization context like we do for functions?
 /// That might be pretty elegant.
 void 
-cg_module::generate_var_decl(const var_decl* d)
+cg_module::generate_var_decl(const Var_Decl* d)
 {
   std::string n = get_name(d);
   llvm::Type* t = get_type(d->get_type());
@@ -413,7 +459,7 @@ cg_module::generate_var_decl(const var_decl* d)
 
 /// Generate a function from the fn expression.
 void 
-cg_module::generate_fn_decl(const fn_decl* d)
+cg_module::generate_fn_decl(const Function_Decl* d)
 {
   cg_function fn(*this, d);
   fn.define();
@@ -429,7 +475,7 @@ get_fn_type(llvm::Type* t)
   return llvm::cast<llvm::FunctionType>(t->getPointerElementType());
 }
 
-cg_function::cg_function(cg_module& m, const fn_decl* d)
+cg_function::cg_function(cg_module& m, const Function_Decl* d)
   : parent(&m), src(d), fn(), entry(), curr()
 {
   std::string n = get_name(d);
@@ -472,14 +518,14 @@ cg_function::cg_function(cg_module& m, const fn_decl* d)
 }
 
 void
-cg_function::declare(const decl* d, llvm::Value* v)
+cg_function::declare(const Decl* d, llvm::Value* v)
 {
   assert(locals.count(d) == 0);
   locals.emplace(d, v);
 }
 
 llvm::Value*
-cg_function::lookup(const decl* d) const
+cg_function::lookup(const Decl* d) const
 {
   auto iter = locals.find(d);
   if (iter != locals.end())
@@ -509,88 +555,88 @@ cg_function::define()
 }
 
 llvm::Value*
-cg_function::generate_expr(const expr* e)
+cg_function::generate_expr(const Expr* e)
 {
   switch (e->get_kind()) {
-  case expr::bool_kind:
-    return generate_bool_expr(static_cast<const bool_expr*>(e));
-  case expr::int_kind:
-    return generate_int_expr(static_cast<const int_expr*>(e));
-  case expr::float_kind:
-    return generate_float_expr(static_cast<const float_expr*>(e));
-  case expr::id_kind:
-    return generate_id_expr(static_cast<const id_expr*>(e));
-  case expr::unop_kind:
-    return generate_unop_expr(static_cast<const unop_expr*>(e));
-  case expr::binop_kind:
-    return generate_binop_expr(static_cast<const binop_expr*>(e));
-  case expr::call_kind:
-    return generate_call_expr(static_cast<const call_expr*>(e));
-  case expr::index_kind:
-    return generate_index_expr(static_cast<const index_expr*>(e));
-  case expr::cond_kind:
-    return generate_cond_expr(static_cast<const cond_expr*>(e));
-  case expr::assign_kind:
-    return generate_assign_expr(static_cast<const assign_expr*>(e));
-  case expr::conv_kind:
-    return generate_conv_expr(static_cast<const conv_expr*>(e));
+  case Expr::bool_kind:
+    return generate_bool_expr(static_cast<const Bool_Expr*>(e));
+  case Expr::int_kind:
+    return generate_int_expr(static_cast<const Int_Expr*>(e));
+  case Expr::float_kind:
+    return generate_float_expr(static_cast<const Float_Expr*>(e));
+  case Expr::id_kind:
+    return generate_id_expr(static_cast<const Id_Expr*>(e));
+  case Expr::unary_kind:
+    return generate_unop_expr(static_cast<const Unary_Expr*>(e));
+  case Expr::binary_kind:
+    return generate_binop_expr(static_cast<const Bin_Expr*>(e));
+  case Expr::call_kind:
+    return generate_call_expr(static_cast<const Call_Expr*>(e));
+  case Expr::index_kind:
+    return generate_index_expr(static_cast<const Index_Expr*>(e));
+  case Expr::cond_kind:
+    return generate_cond_expr(static_cast<const Conditional_Expr*>(e));
+  case Expr::ass_kind:
+    return generate_assign_expr(static_cast<const Assign_Expr*>(e));
+  case Expr::conv_kind:
+    return generate_conv_expr(static_cast<const Conversion_Expr*>(e));
   default: 
     throw std::runtime_error("invalid expression");
   }
 }
 
 llvm::Value*
-cg_function::generate_bool_expr(const bool_expr* e)
+cg_function::generate_bool_expr(const Bool_Expr* e)
 {
   return llvm::ConstantInt::get(get_type(e), e->get_value(), false);
 }
 
 llvm::Value*
-cg_function::generate_int_expr(const int_expr* e)
+cg_function::generate_int_expr(const Int_Expr* e)
 {
   return llvm::ConstantInt::get(get_type(e), e->get_value(), true);
 }
 
 llvm::Value*
-cg_function::generate_float_expr(const float_expr* e)
+cg_function::generate_float_expr(const Float_Expr* e)
 {
   return llvm::ConstantFP::get(get_type(e), e->get_value());
 }
 
 llvm::Value*
-cg_function::generate_id_expr(const id_expr* e)
+cg_function::generate_id_expr(const Id_Expr* e)
 {
   return nullptr;
 }
 
 llvm::Value*
-cg_function::generate_unop_expr(const unop_expr* e)
+cg_function::generate_unop_expr(const Unary_Expr* e)
 {
   return nullptr;
 }
 
 // Note that &e is equivalent to e. This is because e is already an address.
 llvm::Value*
-cg_function::generate_address_expr(const unop_expr* e)
+cg_function::generate_address_expr(const Unary_Expr* e)
 {
   return nullptr;
 }
 
 // Note that *e is equivalent to e. This is because e is already an address.
 llvm::Value*
-cg_function::generate_deref_expr(const unop_expr* e)
+cg_function::generate_deref_expr(const Unary_Expr* e)
 {
   return nullptr;
 }
 
 llvm::Value*
-cg_function::generate_binop_expr(const binop_expr* e)
+cg_function::generate_binop_expr(const Bin_Expr* e)
 {
   return nullptr;
 }
 
 llvm::Value*
-cg_function::generate_relational_expr(const binop_expr* e)
+cg_function::generate_relational_expr(const Bin_Expr* e)
 {
   // llvm::Value* lhs = generate_expr(e->get_lhs());
   // llvm::Value* rhs = generate_expr(e->get_rhs());
@@ -615,108 +661,105 @@ cg_function::generate_relational_expr(const binop_expr* e)
 }
 
 llvm::Value*
-cg_function::generate_call_expr(const call_expr* e)
+cg_function::generate_call_expr(const Call_Expr* e)
 {
   return nullptr;
 }
 
 llvm::Value*
-cg_function::generate_index_expr(const index_expr* e)
+cg_function::generate_index_expr(const Index_Expr* e)
 {
   return nullptr;
 }
 
 llvm::Value*
-cg_function::generate_assign_expr(const assign_expr* e)
+cg_function::generate_assign_expr(const Assign_Expr* e)
 {
   return nullptr;
 }
 
 llvm::Value*
-cg_function::generate_cond_expr(const cond_expr* e)
+cg_function::generate_cond_expr(const Conditional_Expr* e)
 {
   return nullptr;
 }
 
 // FIXME: Clean this up.
 llvm::Value*
-cg_function::generate_conv_expr(const conv_expr* c)
+cg_function::generate_conv_expr(const Conversion_Expr* c)
 {
   return nullptr;
 }
 
 void
-cg_function::generate_stmt(const stmt* s)
+cg_function::generate_stmt(const Stmt* s)
 {
   switch (s->get_kind()) {
-  case stmt::block_kind:
-    return generate_block_stmt(static_cast<const block_stmt*>(s));
-  case stmt::when_kind:
-    return generate_when_stmt(static_cast<const when_stmt*>(s));
-  case stmt::if_kind:
-    return generate_if_stmt(static_cast<const if_stmt*>(s));
-  case stmt::while_kind:
-    return generate_while_stmt(static_cast<const while_stmt*>(s));
-  case stmt::break_kind:
-    return generate_break_stmt(static_cast<const break_stmt*>(s));
-  case stmt::cont_kind:
-    return generate_cont_stmt(static_cast<const cont_stmt*>(s));
-  case stmt::ret_kind:
-    return generate_ret_stmt(static_cast<const ret_stmt*>(s));
-  case stmt::decl_kind:
-    return generate_decl_stmt(static_cast<const decl_stmt*>(s));
-  case stmt::expr_kind:
-    return generate_expr_stmt(static_cast<const expr_stmt*>(s));
+  case Stmt::block_kind:
+    return generate_block_stmt(static_cast<const Block_Stmt*>(s));
+  case Stmt::if_kind:
+    return generate_if_stmt(static_cast<const If_Stmt*>(s));
+  case Stmt::if_else_kind:
+    return generate_if_else_stmt(static_cast<const If_Else_Stmt*>(s));
+  case Stmt::while_kind:
+    return generate_while_stmt(static_cast<const While_Stmt*>(s));
+  case Stmt::breaking_kind:
+    return generate_ret_stmt(static_cast<const Breaking_Stmt*>(s));
+  case Stmt::decl_kind:
+    return generate_decl_stmt(static_cast<const Decl_Stmt*>(s));
+  case Stmt::expr_kind:
+    return generate_expr_stmt(static_cast<const Expr_Stmt*>(s));
   }
 }
 
 void
-cg_function::generate_block_stmt(const block_stmt* s)
+cg_function::generate_block_stmt(const Blo* s)
 {
 }
 
 void
-cg_function::generate_when_stmt(const when_stmt* s)
+cg_function::generate_if_stmt(const If_Stmt* s)
+{
+}
+
+void 
+cg_function::generate_if_else_stmt(const If_Else_Stmt* s)
+{
+  
+}
+
+void
+cg_function::generate_while_stmt(const While_Stmt* s)
 {
 }
 
 void
-cg_function::generate_if_stmt(const if_stmt* s)
+cg_function::generate_break_stmt(const Breaking_Stmt* e)
 {
 }
 
 void
-cg_function::generate_while_stmt(const while_stmt* s)
+cg_function::generate_cont_stmt(const Breaking_Stmt* e)
 {
 }
 
 void
-cg_function::generate_break_stmt(const break_stmt* e)
+cg_function::generate_ret_stmt(const Breaking_Stmt* e)
 {
 }
 
 void
-cg_function::generate_cont_stmt(const cont_stmt* e)
+cg_function::generate_decl_stmt(const Decl_Stmt* e)
 {
 }
 
 void
-cg_function::generate_ret_stmt(const ret_stmt* e)
+cg_function::generate_expr_stmt(const Expr_Stmt* e)
 {
 }
 
 void
-cg_function::generate_decl_stmt(const decl_stmt* e)
-{
-}
-
-void
-cg_function::generate_expr_stmt(const expr_stmt* e)
-{
-}
-
-void
-generate(const decl* d)
+generate(const Decl* d)
 {
   assert(d->is_program());
   
@@ -724,7 +767,7 @@ generate(const decl* d)
   cg_context cg;
 
   // Create the module, and generate its declarations.
-  cg_module mod(cg, static_cast<const prog_decl*>(d));
+  cg_module mod(cg, static_cast<const Prog_Decl*>(d));
   mod.generate();
 
   // Dump the generated module to 

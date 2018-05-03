@@ -2,25 +2,25 @@
 
 #include <vector>
 
-enum type_name{
-    type_void,
-    type_bool,
-    type_int,
-    type_float,
-    type_char,
-    type_string,
-    type_ref,
-    type_post,
-    type_unary,
-    type_func,
-    type_ptr,
-
-    // note: there will be no operations on these types:
-    id_type, 
-    arith_type
-};
-
 struct Type {
+    enum type_name{
+        type_void,
+        type_bool,
+        type_int,
+        type_float,
+        type_char,
+        type_string,
+        type_ref,
+        type_post,
+        type_unary,
+        type_func,
+        type_ptr,
+    
+        // note: there will be no operations on these types:
+        id_type, 
+        arith_type
+    };
+
     Type() = default;
     Type(type_name tn)
         : name(tn)

@@ -6,16 +6,17 @@
 
 using Decl_List = std::vector<Decl*>;
 
-enum decl_kind {
-    var_decl,
-    let_decl,
-    value_decl,
-    program_decl,
-    param_decl,
-    function_decl
-};
 
 struct Decl{
+    enum decl_kind {
+        var_decl,
+        let_decl,
+        value_decl,
+        program_decl,
+        param_decl,
+        function_decl
+    };
+
     Decl() = default;
     Decl(const char* str, decl_kind k, Type* t = nullptr)
         : name(str),

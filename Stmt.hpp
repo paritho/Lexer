@@ -5,28 +5,31 @@
 
 using Stmt_List = std::vector<Stmt*>;
 
-enum stmt_kind {
-    block_kind,
-    if_kind,
-    if_else_kind,
-    while_kind,
-    decl_kind,
-    expr_kind,
-    breaking_kind
-};
-
-enum breaking_stmt {
-    break_stmt,
-    continue_stmt,
-    return_stmt
-};
-
 struct Stmt {
+    enum stmt_kind {
+        block_kind,
+        if_kind,
+        if_else_kind,
+        while_kind,
+        decl_kind,
+        expr_kind,
+        breaking_kind
+    };
+
+    enum breaking_stmt {
+        break_stmt,
+        continue_stmt,
+        return_stmt
+    };
+
+
     Stmt(stmt_kind k)
         : kind(k)
     {}
 
     virtual ~Stmt() = default;  
+
+    stmt_kind get_kind() { return kind; }
 
     private:
     stmt_kind kind;
