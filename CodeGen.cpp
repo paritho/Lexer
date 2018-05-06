@@ -619,14 +619,14 @@ cg_function::generate_unop_expr(const Unary_Expr* e)
 llvm::Value*
 cg_function::generate_address_expr(const Unary_Expr* e)
 {
-  return nullptr;
+  return generate_expr(e->get_value());
 }
 
 // Note that *e is equivalent to e. This is because e is already an address.
 llvm::Value*
 cg_function::generate_deref_expr(const Unary_Expr* e)
 {
-  return nullptr;
+  return generate_expr(e->get_value());
 }
 
 llvm::Value*
@@ -638,25 +638,25 @@ cg_function::generate_binop_expr(const Bin_Expr* e)
 llvm::Value*
 cg_function::generate_relational_expr(const Bin_Expr* e)
 {
-  // llvm::Value* lhs = generate_expr(e->get_lhs());
-  // llvm::Value* rhs = generate_expr(e->get_rhs());
-  // llvm::IRBuilder<> ir(get_current_block());
-  // switch (e->get_operator()) {
-  // case op_eq:
-  //   return ir.CreateICmpEQ(lhs, rhs);
-  // case op_ne:
-  //   return ir.CreateICmpNE(lhs, rhs);
-  // case op_lt:
-  //   return ir.CreateICmpSLT(lhs, rhs);
-  // case op_gt:
-  //   return ir.CreateICmpSGT(lhs, rhs);
-  // case op_le:
-  //   return ir.CreateICmpSLE(lhs, rhs);
-  // case op_ge:
-  //   return ir.CreateICmpSGE(lhs, rhs);
-  // default:
-  //   throw std::logic_error("invalid operator");
-  // }
+  llvm::Value* lhs = generate_expr(e->get_lhs());
+  llvm::Value* rhs = generate_expr(e->get_rhs());
+  llvm::IRBuilder<> ir(get_current_block());
+  switch (e->get_operator()) {
+      case op_equals:
+        return ir.CreateICmpEQ(lhs, rhs);
+      case op_notequal:
+        return ir.CreateICmpNE(lhs, rhs);
+      case op_lessthan:
+        return ir.CreateICmpSLT(lhs, rhs);
+      case op_greaterthan:
+        return ir.CreateICmpSGT(lhs, rhs);
+      case op_ltequals:
+        return ir.CreateICmpSLE(lhs, rhs);
+      case op_gtequals:
+        return ir.CreateICmpSGE(lhs, rhs);
+      default:
+        throw std::logic_error("invalid operator");
+  }
   return nullptr;
 }
 
@@ -675,12 +675,35 @@ cg_function::generate_index_expr(const Index_Expr* e)
 llvm::Value*
 cg_function::generate_assign_expr(const Assign_Expr* e)
 {
+  llvm::IRBuilder<> ir(get_current_block());
+  cg_function func = get_function();
+ 
+  llvm::Value* lhs = generate_expr(e->get_lhs());
+  if(lookup(e, lhs)) throw std::runtime_error('redecl of var');
+  llvm::Value* rhs = generate_expr(e->get_rhs());
+  declare(lhs, rhs);
+
   return nullptr;
 }
 
 llvm::Value*
 cg_function::generate_cond_expr(const Conditional_Expr* e)
 {
+  cg_function func = get_function();
+  auto entry = func.make_block("entry");
+  auto end = func.make_block("end");
+  auto test = func.make_block("test");
+
+  func.emit_block(Entry);
+
+  llvm::Value* cond = generate_expr(e->get_test());
+  func.emit_block(test);
+
+  llvm::Value* tb = generate_expr(e->get_true_branch());
+  llvm::Value* fb = generate_expr(e->get_false_branch());
+
+  func.emit_block(end)
+
   return nullptr;
 }
 
@@ -713,29 +736,87 @@ cg_function::generate_stmt(const Stmt* s)
 }
 
 void
-cg_function::generate_block_stmt(const Blo* s)
+cg_function::generate_block_stmt(const Block_Stmt* s)
 {
 }
 
 void
 cg_function::generate_if_stmt(const If_Stmt* s)
 {
+  cg_function func = get_function();
+  auto entry = func.make_block("entry");
+  auto end = func.make_block("end");
+  llvm::Value* cond = generate_expr(s->get_test());
+  func.emit_block(entry);
+  auto tbranch = func.make_block("true");
+  
+  llvm::Value* tbranch;
+  while(tbranch)
+    tbranch = generate_stmt(s->get_tbranch()))
+
+  func.emit_block(tbranch);  
+  func.emit_block(end);
 }
 
 void 
 cg_function::generate_if_else_stmt(const If_Else_Stmt* s)
 {
+
+  cg_function func = get_function();
+  auto entry = func.make_block("entry");
+  auto end = func.make_block("end");  
+  llvm::Value* cond = generate_expr(s->get_test());
+  func.emit_block(entry);
+  auto tbranch = func.make_block("true");
+  auto fbranch = func.make_block("false");
+  
+  llvm::Value* tbranch;
+  while(tbranch)
+    tbranch = generate_stmt(s->get_tbranch()))
+
+  func.emit_block(tbranch); 
+
+  llvm::Value* fbranch;
+  while(fbranch)
+    fbranch = generate_stmt(s->get_fbranch());
+
+  func.emit_block(fbranch);
+  func.emit_block(end);
   
 }
 
 void
 cg_function::generate_while_stmt(const While_Stmt* s)
 {
+  cg_function func = get_function();
+  auto entry = func.make_block("entry");
+  auto body = func.make_block("body");
+  auto end = func.make_block("end");
+
+  func.emit_block(entry);
+  llvm::Value* test = generate_expr(s->get_test());
+
+  while(Stmt* sb = s->get_body())
+    generate_stmt(sb);
+
+  func.emit_block(body);
+  func.emit_block(end);
 }
 
 void
 cg_function::generate_break_stmt(const Breaking_Stmt* e)
 {
+  cg_function func = get_function();
+  auto curBlock = get_current_block();
+  switch(e->get_kind_of_breaking()){
+    case Stmt::continue_stmt:
+      return generate_cont_stmt(e);
+    case Stmt::return_stmt:
+      return generate_ret_stmt(e);
+    default:{
+      func.emit_block(curBlock);
+    }
+  }
 }
 
 void

@@ -54,6 +54,9 @@ struct If_Stmt : Stmt {
           tbranch(stmt)
     {}
 
+    Expr* get_test() { return test;}
+    Stmt* get_tbranch() {return tbranch; }
+
     Expr* test;
     Stmt* tbranch;
 };

@@ -186,6 +186,8 @@ struct Ref_Expr : Expr {
         : Expr(ref_kind, new Ref_Type()), val(n)
     {}
 
+    int get_value() { return val; }
+
     int& val;
 };
 
@@ -209,6 +211,9 @@ struct Assign_Expr : Expr {
           rhs(rhs)
     {}
 
+    Expr* get_lhs() { return lhs; }
+    Expr* get_rhs() { return rhs; }
+
     Expr* lhs;
     Expr* rhs;
 };
@@ -221,6 +226,10 @@ struct Conditional_Expr : Expr {
           tbranch(tbranch),
           fbranch(fbranch)
     {}
+
+    Expr* get_test() {return test;}
+    Expr* get_true_branch() {return tbranch;}
+    Expr* get_false_branch() {return fbranch;}
 
     Expr* test;
     Expr* tbranch;
@@ -253,6 +262,9 @@ struct Bin_Expr : Expr {
           e1(e1),
           e2(e2)
     {}
+
+    Expr* get_lhs() { return e1; }
+    Expr* get_rhs() { return e2; }
 
     binop op;
     Expr* e1;
