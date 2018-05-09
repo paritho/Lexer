@@ -58,7 +58,7 @@ Type::is_ref_to(Type* t){
 
 // same note as above
 bool 
-Type::is_prt_to(Type* t){
+Type::is_ptr_to(Type* t){
     if(t->get_name() == type_ptr)
         return is_same_type(t->get_el_type(), new Ptr_Type());
     return false;

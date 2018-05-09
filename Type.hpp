@@ -30,7 +30,7 @@ struct Type {
 
     type_name get_name() { return name; }
     bool is_ref_to(Type* t);
-    bool is_prt_to(Type* t);
+    bool is_ptr_to(Type* t);
 
     private:
     type_name name;
