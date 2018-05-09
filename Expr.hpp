@@ -294,6 +294,8 @@ struct Unary_Expr : Expr {
           t(t)
     {}
 
+    Expr* get_expr() { return e; }
+
     unop uop;
     Expr* e;
     Type* t;

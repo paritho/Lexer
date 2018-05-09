@@ -140,6 +140,8 @@ struct cg_function
   /// Returns the underlying LLVM Function.
   llvm::Function* get_function() const { return fn; }
 
+  void set_function(llvm Function* func) { fn = func; }
+
   // Names
 
   /// Returns the name for the declaration `d`.
@@ -165,7 +167,6 @@ struct cg_function
   llvm::Value* lookup(const Decl* x) const;
 
   // Function definition
-
   void define();
 
   // Block management
@@ -182,6 +183,8 @@ struct cg_function
 
   /// Emits a new block, making it active.
   void emit_block(llvm::BasicBlock* bb);
+
+  void set_current_block(llvm::BasicBlock* bb) { curr = bb;}
 
   // Instruction generation
 
@@ -606,13 +609,13 @@ cg_function::generate_float_expr(const Float_Expr* e)
 llvm::Value*
 cg_function::generate_id_expr(const Id_Expr* e)
 {
-  return nullptr;
+  return generate_decl(e->get_decl());
 }
 
 llvm::Value*
 cg_function::generate_unop_expr(const Unary_Expr* e)
 {
-  return nullptr;
+  return generate_expr(e->get_expr());
 }
 
 // Note that &e is equivalent to e. This is because e is already an address.
@@ -738,6 +741,16 @@ cg_function::generate_stmt(const Stmt* s)
 void
 cg_function::generate_block_stmt(const Block_Stmt* s)
 {
+  cg_function func = get_function();
+  auto entry = func.make_block("entry");
+  auto end = func.make_block("end");
+  func.emit_block(entry)
+
+  Stmt* stmt;
+  while(s)
+    stmt = generate_stmt(s);
+
+  func.emit_block(end);
 }
 
 void
@@ -822,21 +835,32 @@ cg_function::generate_break_stmt(const Breaking_Stmt* e)
 void
 cg_function::generate_cont_stmt(const Breaking_Stmt* e)
 {
+  cg_function func = get_function();
+  auto block = func.get_entry_block();
+  
+  if(block !== func.get_current_block())
+    func.set_cuurent_block(block);
+  
+  func.emit_block(block);
 }
 
 void
 cg_function::generate_ret_stmt(const Breaking_Stmt* e)
 {
+    cg_function func = get_function();
+    set_function(func->parent);
 }
 
 void
 cg_function::generate_decl_stmt(const Decl_Stmt* e)
 {
+  generate(e);
 }
 
 void
 cg_function::generate_expr_stmt(const Expr_Stmt* e)
 {
+  generate_expr(e);
 }
 
 void
